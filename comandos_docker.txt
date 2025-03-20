@@ -1,0 +1,66 @@
+1️⃣ docker build
+- Função: Constrói uma IMAGEM Docker a partir de um Dockerfile.
+- Sintaxe:
+  docker build -t nome_da_imagem .
+- Explicação: O comando docker build cria uma nova imagem baseada no Dockerfile localizado no diretório atual (.). O parâmetro -t atribui um nome à imagem.
+
+2️⃣ docker run
+- Função: Cria e executa um CONTAINER a partir de uma imagem.
+- Sintaxe:
+  docker run -p <porta_local>:<porta_container> nome_da_imagem
+- Explicação: O comando docker run cria um container a partir da imagem especificada e o inicia. A opção -p mapeia uma porta do container para uma porta do seu sistema local (por exemplo, mapeando a porta 80 do container para a porta 8080 da máquina local).
+
+3️⃣ docker ps
+- Função: Lista os containers em execução.
+- Sintaxe:
+  docker ps
+- Explicação: Este comando mostra os containers que estão atualmente em execução. Para listar todos os containers (em execução e parados), use docker ps -a.
+
+4️⃣ docker stop
+- Função: Para a execução de um container.
+- Sintaxe:
+  docker stop <ID_do_container>
+- Explicação: Para o container em execução. O <ID_do_container> pode ser encontrado usando o comando docker ps ou o nome do container.
+
+5️⃣ docker rm
+- Função: Remove um container (parado).
+- Sintaxe:
+  docker rm <ID_do_container>
+- Explicação: Este comando remove o container. Só é possível remover containers que não estão em execução. Se você quiser remover um container que está rodando, você precisa primeiro pará-lo com o comando docker stop.
+
+6️⃣ docker images
+- Função: Lista as imagens disponíveis no seu sistema local.
+- Sintaxe:
+  docker images
+- Explicação: Mostra todas as imagens que estão armazenadas localmente em seu Docker.
+
+7️⃣ docker rmi
+- Função: Remove uma imagem.
+- Sintaxe:
+  docker rmi nome_da_imagem
+- Explicação: Remove a imagem especificada. Se houver containers usando essa imagem, será necessário removê-los primeiro.
+
+8️⃣ docker exec
+- Função: Executa um comando dentro de um container em execução.
+- Sintaxe:
+  docker exec -it <ID_do_container> <comando>
+- Explicação: Esse comando executa um comando dentro de um container que está rodando. A opção -it permite interação com o terminal dentro do container. Por exemplo, se você quiser acessar o shell de um container, pode usar:
+  docker exec -it <ID_do_container> /bin/bash
+
+9️⃣ docker logs
+- Função: Exibe os logs de um container.
+- Sintaxe:
+  docker logs <ID_do_container>
+- Explicação: Esse comando exibe os logs do container especificado, o que pode ser útil para depuração.
+
+🔟 docker-compose up
+- Função: Inicia os serviços definidos no arquivo docker-compose.yml.
+- Sintaxe:
+  docker-compose up
+- Explicação: Quando você tem um arquivo docker-compose.yml (geralmente usado para orquestrar múltiplos containers), o comando docker-compose up cria e inicia os containers definidos no arquivo.
+
+🔟 docker-compose down
+- Função: Remove containers, redes e volumes definidos pelo docker-compose.yml.
+- Sintaxe:
+  docker-compose down
+- Explicação: Esse comando interrompe e remove os containers e recursos que foram definidos no docker-compose.yml.
