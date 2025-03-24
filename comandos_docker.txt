@@ -7,7 +7,7 @@
 2️⃣ docker run
 - Função: Cria e executa um CONTAINER a partir de uma imagem.
 - Sintaxe:
-  docker run -p <porta_local>:<porta_container> nome_da_imagem
+  docker run -p <porta_local>:<porta_container> nome_da_imagem (docker run -d --name meu_container -p 8000:80 nome_da_imagem)
 - Explicação: O comando docker run cria um container a partir da imagem especificada e o inicia. A opção -p mapeia uma porta do container para uma porta do seu sistema local (por exemplo, mapeando a porta 80 do container para a porta 8080 da máquina local).
 
 3️⃣ docker ps
@@ -64,3 +64,9 @@
 - Sintaxe:
   docker-compose down
 - Explicação: Esse comando interrompe e remove os containers e recursos que foram definidos no docker-compose.yml.
+
+🔟 docker exec -it meu_container bash   
+- Acessar o contudo de um container via terminal
+
+🔟 docker-compose up -d
+Os "volumes" é que são responsaveis pro "sincronizar" o conteudo da "máquina local" com o "container", por isso estou usando o "docker-compose", para criar esse volume

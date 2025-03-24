@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  php-app:
+    build: .
+    container_name: php-face-recognition
+    ports:
+      - "8000:80"
+    volumes:
+      - ./imagens:/var/www/html/imagens
+    restart: unless-stopped

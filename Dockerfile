@@ -1,34 +1,38 @@
-# Usando uma imagem base para PHP
-FROM php:8.0-cli
+# Base mais leve para evitar pacotes desnecessários
+FROM debian:bullseye-slim
 
-# Atualiza os pacotes e instala dependências do sistema
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-dev \
+# Evita prompts interativos
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/Sao_Paulo
+
+# Atualizar repositórios e instalar apenas os pacotes essenciais
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    apache2 \
+    libapache2-mod-php \
+    curl \
+    unzip \
     build-essential \
-    libopenblas-dev \
-    liblapack-dev \
-    libx11-dev \
     cmake \
-    git \
-    libxml2-dev \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala a biblioteca dlib (necessária para o face_recognition) e o face_recognition
-RUN pip3 install dlib face_recognition
+# Criar e ativar ambiente virtual Python
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Instalar a extensão XML do PHP
-RUN docker-php-ext-install xml
+# Atualizar pip e instalar pacotes para reconhecimento facial
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir dlib face_recognition
 
-# Cria um diretório de trabalho para o PHP
-WORKDIR /var/www/html
+# Copiar aplicação PHP para o Apache
+COPY . /var/www/html/
+RUN chown -R www-data:www-data /var/www/html
 
-# Copia o código PHP e os scripts Python para o container
-COPY . /var/www/html
+# Expor porta 80 para acesso à aplicação
+EXPOSE 80
 
-# Expondo a porta 8000 para o servidor PHP embutido
-EXPOSE 8000
-
-# Inicia apenas o servidor PHP
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "/var/www/html"]
+# Rodar o Apache em foreground
+CMD ["apachectl", "-D", "FOREGROUND"]
