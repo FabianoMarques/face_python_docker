@@ -7,5 +7,6 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - ./imagens:/var/www/html/imagens
+      # ./imagens:/var/www/html/imagens
+      - .:/var/www/html/
     restart: unless-stopped

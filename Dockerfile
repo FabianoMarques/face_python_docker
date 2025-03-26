@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     python3-pip \
     python3-venv \
+    libboost-all-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,6 +33,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copiar aplicação PHP para o Apache
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
+
+# Habilitar módulos do Apache para PHP e configurar index.php como página inicial
+RUN a2enmod php7.4 \
+    && echo "DirectoryIndex index.php index.html" > /etc/apache2/mods-enabled/dir.conf \
+    && rm /var/www/html/index.html  # Remover página padrão do Apache
 
 # Expor porta 80 para acesso à aplicação
 EXPOSE 80

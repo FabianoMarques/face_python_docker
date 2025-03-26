@@ -18,9 +18,19 @@
         h1 {
             color: #333;
         }
+        .container {
+            position: relative;
+            text-align: center;
+        }
         canvas {
             border: 2px solid #333;
             border-radius: 8px;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
         button {
             width: 640px;
@@ -40,12 +50,15 @@
         }
         .loading {
             display: none;
-            margin-top: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 20px;
             color: rgb(255, 0, 0);
-        }
-        .container {
-            text-align: center;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -53,10 +66,13 @@
 
     <div class="container">
         <h1><strong>CAPTURAR E ANALISAR</strong></h1>
-        <canvas id="canvas" width="640" height="480"></canvas>
-        <br>
-        <button id="capturar">CAPTURAR E ANALISAR</button>
         <div id="loading" class="loading"><strong>PROCESSANDO... POR FAVOR AGUARDE!!!</strong></div>
+        <canvas id="canvas" width="640" height="480"></canvas>
+        <div class="button-container">
+            <button id="capturar">CAPTURAR E ANALISAR</button>
+            <button id="cadastrar">CADASTRAR IMAGEM</button>
+            <button id="excluir">EXCLUIR IMAGEM</button>
+        </div>
     </div>
 
     <script>
@@ -67,13 +83,9 @@
         const canvas = document.getElementById("canvas");
         const context = canvas.getContext("2d");
 
-        // Criar um segundo canvas oculto para capturar a imagem sem o retângulo
-        const canvasOculto = document.createElement("canvas");
-        canvasOculto.width = 640;
-        canvasOculto.height = 480;
-        const contextOculto = canvasOculto.getContext("2d");
-
         const capturarBtn = document.getElementById("capturar");
+        const cadastrarBtn = document.getElementById("cadastrar");
+        const excluirBtn = document.getElementById("excluir");
         const loadingDiv = document.getElementById("loading");
 
         // Iniciar a webcam
@@ -101,15 +113,16 @@
             requestAnimationFrame(atualizarCanvas);
         }
 
-        // Capturar e enviar imagem sem o retângulo
-        capturarBtn.addEventListener("click", () => {
+        function enviarImagem(url) {
             loadingDiv.style.display = 'block';
-
-            // Copiar a imagem do vídeo para o canvas oculto (sem o retângulo)
+            const canvasOculto = document.createElement("canvas");
+            canvasOculto.width = 640;
+            canvasOculto.height = 480;
+            const contextOculto = canvasOculto.getContext("2d");
             contextOculto.drawImage(video, 0, 0, canvasOculto.width, canvasOculto.height);
             const dataUrl = canvasOculto.toDataURL("image/png");
 
-            fetch("salvar_foto.php", {
+            fetch(url, {
                 method: "POST",
                 body: JSON.stringify({ imagem: dataUrl }),
                 headers: { "Content-Type": "application/json" }
@@ -123,7 +136,11 @@
             .finally(() => {
                 loadingDiv.style.display = 'none';
             });
-        });
+        }
+
+        capturarBtn.addEventListener("click", () => enviarImagem("salvar_foto.php"));
+        cadastrarBtn.addEventListener("click", () => window.location.href = "cad_imagem.php");
+        excluirBtn.addEventListener("click", () => window.location.href = "exc_imagem.php");
     </script>
 
 </body>

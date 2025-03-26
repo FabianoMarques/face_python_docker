@@ -52,9 +52,18 @@
             margin-top: 20px;
             font-size: 20px;
             color: rgb(255, 0, 0);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
         }
         .container {
             text-align: center;
+            position: relative;
         }
     </style>
 </head>
@@ -149,7 +158,6 @@
                 loadingDiv.style.display = 'none';
             });
         });
-
     </script>
 
 </body>
