@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   php-app:
     build: .
@@ -7,6 +5,31 @@ services:
     ports:
       - "8000:80"
     volumes:
-      # ./imagens:/var/www/html/imagens
       - .:/var/www/html/
     restart: unless-stopped
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-face-recognition
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: face_recognition_db
+      MYSQL_USER: usuario
+      MYSQL_PASSWORD: senha
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    container_name: adminer-face-recognition
+    restart: always
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:

