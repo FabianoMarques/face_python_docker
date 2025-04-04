@@ -153,9 +153,9 @@ $result = $conn->query("SELECT * FROM paciente WHERE CPF = '$nomeArquivo'");
 
                             $result2 = $conn->query("INSERT INTO consultas (idpaciente, profissional, dt_consulta) VALUES ($idPaciente, '$profissional', '$data_hora')");
                             if ($conn->affected_rows > 0) {
-                                echo "Paciente cadastrado com sucesso!";
+                                //echo "Paciente cadastrado com sucesso!";
                             } else {
-                                echo "Erro ao cadastrar paciente.";
+                                echo "Erro ao cadastrar consulta.";
                                 // Depuração: Exibe a query antes de executar
                             }
 

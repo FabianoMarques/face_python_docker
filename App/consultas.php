@@ -114,7 +114,7 @@ $result = $conn->query($sql);
         <table>
             <tr>
                 <th>ID</th>
-                <th>ID Paciente</th>
+                <th>Paciente</th>
                 <th>Profissional</th>
                 <th>Data da Consulta</th>
             </tr>
