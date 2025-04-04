@@ -39,14 +39,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION["usuario"] = $row["email"];
             header("Location: /App/menu.php");
             exit();
+            
         } else {
-            //$_SESSION["login"] = "<h1>Usuario ou Senha incorreto</h1>";
-            //echo "Senha incorreta.";
             header("Location: /index.php?aviso=<h2><b>Usuario</b> ou <b>Senha</b> incorreto</h2>");
         }
     } else {
-        $_SESSION["login"] = "Usuario ou Senha incorreto";
-        //echo "Usuário não encontrado.";
         header("Location: /index.php?aviso=<h2><b>Usuario</b> ou <b>Senha</b> incorreto</h2>");
     }
 }

