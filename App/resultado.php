@@ -23,15 +23,15 @@ if ($result_paciente->num_rows > 0) {
 date_default_timezone_set('America/Sao_Paulo');
 $data_hora = date('Y-m-d H:i:s');
 
-$intervaloSegundos = 999999; // padrão alto
-$result_consulta = $conn->query("SELECT * FROM consultas WHERE idpaciente = '{$_SESSION['idpaciente']}' ORDER BY dt_consulta ASC LIMIT 1");
+//A CONSULTA VAI RETORNAR A ULTIMA CONSULTA (IDCONSULTA) PARA AQUELE PACIENTE (IDPACIENTE)
+$result_consulta = $conn->query("SELECT * FROM consultas WHERE idpaciente = '{$_SESSION['idpaciente']}' ORDER BY idconsulta DESC LIMIT 1");
 if ($result_consulta && $result_consulta->num_rows > 0) {
     $row = $result_consulta->fetch_assoc();
-    $dtConsulta = $row['dt_consulta'];
+    echo $dtConsulta = $row['dt_consulta'];
     $dataUltimaConsulta = DateTime::createFromFormat('Y-m-d H:i:s', $dtConsulta);
     $dataAtual = new DateTime();
     $intervaloSegundos = $dataAtual->getTimestamp() - $dataUltimaConsulta->getTimestamp();
-    //var_dump($intervaloSegundos);
+    var_dump($intervaloSegundos);
 }
 ?>
 

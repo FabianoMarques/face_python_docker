@@ -4,6 +4,15 @@ require_once '../db.php'; // Inclui a classe de conexão
 $db = new Database();
 $conn = $db->getConnection();
 
+// Define ordenação padrão
+$order = 'DESC';
+if (isset($_GET['order']) && in_array($_GET['order'], ['ASC', 'DESC'])) {
+    $order = $_GET['order'];
+}
+
+// Alterna a ordem para o link
+$novaOrdem = $order === 'ASC' ? 'DESC' : 'ASC';
+
 // Query para buscar os dados
 $sql = "SELECT 
             consultas.idconsulta, 
@@ -13,7 +22,7 @@ $sql = "SELECT
             consultas.dt_consulta 
         FROM consultas
         JOIN paciente ON consultas.idpaciente = paciente.idpaciente
-        ORDER BY consultas.dt_consulta DESC";
+        ORDER BY consultas.dt_consulta $order";
 $result = $conn->query($sql);
 ?>
 
@@ -105,8 +114,8 @@ $result = $conn->query($sql);
         <h2>LISTA DE CONSULTAS</h2>
 
         <div class="button-row" style="margin-bottom:-5px">
-        <a href="#" onclick="window.print()" class="botao-acao"><i class="fa fa-print"></i>Imprimir</a>
-        <a href="menu.php" class="btn menu"><i class="fa fa-arrow-left"></i> Voltar ao Menu</a>
+            <a href="#" onclick="window.print()" class="botao-acao"><i class="fa fa-print"></i>Imprimir</a>
+            <a href="menu.php" class="btn menu"><i class="fa fa-arrow-left"></i> Voltar ao Menu</a>
         </div>
 
         <?php
@@ -120,7 +129,12 @@ $result = $conn->query($sql);
                 <th>ID</th>
                 <th>Paciente</th>
                 <th>Profissional</th>
-                <th>Data da Consulta</th>
+                <th>
+                    <a href="?order=<?php echo $novaOrdem; ?>" style="text-decoration:none; color:inherit;">
+                        Data da Consulta 
+                        <?php echo $order === 'ASC' ? '<span style="color:black; font-size:16px;">&#9650;</span>' : '<span style="color:black; font-size:16px;">&#9660;</span>'; ?>
+                    </a>
+                </th>
             </tr>
 
             <?php
