@@ -2,7 +2,7 @@
 require_once '../db.php';
 $conn = (new Database())->getConnection();
 
-$id = $nome = $cpf = $profissional = "";
+$id = $nome = $cpf = $profissional = $email = "";
 
 // Verificar se é edição
 if (isset($_GET['id'])) {
@@ -15,6 +15,7 @@ if (isset($_GET['id'])) {
         $nome = $result['nome'];
         $cpf = $result['CPF'];
         $profissional = $result['profissional'];
+        $email = $result['email']; // novo campo
     }
     $stmt->close();
 }
@@ -25,17 +26,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome = trim($_POST['nome']);
     $cpf = trim($_POST['cpf']);
     $profissional = trim($_POST['profissional']);
+    $email = trim($_POST['email']);
 
-    if (!empty($nome) && !empty($cpf) && !empty($profissional)) {
+    if (!empty($nome) && !empty($cpf) && !empty($profissional) && !empty($email)) {
         if (!empty($id)) {
             // Atualizar
-            $stmt = $conn->prepare("UPDATE paciente SET nome=?, CPF=?, profissional=? WHERE idpaciente=?");
-            $stmt->bind_param("sssi", $nome, $cpf, $profissional, $id);
+            $stmt = $conn->prepare("UPDATE paciente SET nome=?, CPF=?, profissional=?, email=? WHERE idpaciente=?");
+            $stmt->bind_param("ssssi", $nome, $cpf, $profissional, $email, $id);
             $mensagem = $stmt->execute() ? "✅ Paciente atualizado com sucesso!" : "❌ Erro ao atualizar: " . $stmt->error;
         } else {
             // Cadastrar
-            $stmt = $conn->prepare("INSERT INTO paciente (nome, CPF, profissional) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $nome, $cpf, $profissional);
+            $stmt = $conn->prepare("INSERT INTO paciente (nome, CPF, profissional, email) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $nome, $cpf, $profissional, $email);
             $mensagem = $stmt->execute() ? "✅ Paciente cadastrado com sucesso!" : "❌ Erro ao cadastrar: " . $stmt->error;
         }
         $stmt->close();
@@ -52,36 +54,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Paciente</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="botoes.css">
+    <link rel="stylesheet" href="estilo.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 50%; background: #fff; padding: 20px; margin-top: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); }
-        h2 { text-align: center; }
         .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; display: block; }
-        input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
-        .buttons { text-align: center; margin-top: 20px; }
-        button { background: #4CAF50; color: white; padding: 10px 15px; font-size: 16px; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #45a049; }
-        .back-btn { background: #555; }
-        .back-btn:hover { background: #444; }
-        .message { text-align: center; margin-top: 10px; font-weight: bold; color: red; }
-
-        .back-btn {
-            display: inline-block;
-            background-color: #555;
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .back-btn:hover {
-            background-color: #444;
-        }
-
-
+        label { font-weight: bold; display: block; text-align: left;}
+        input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; text-align: left; }
     </style>
 </head>
 <body>
@@ -104,9 +82,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label>Profissional:</label>
             <input type="text" name="profissional" value="<?= $profissional ?>" required>
         </div>
-        <div class="buttons">
-            <button type="submit">Salvar</button>
-            <a href="menu.php" class="back-btn"><i class="fa fa-arrow-left"></i> Voltar</a>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" name="email" value="<?= $email ?>" required>
+        </div>
+        <div>
+            <button type="submit" class="btn_verde">Salvar</button>
+            <button type="button" onclick="window.location.href='cad_paciente.php'" class="btn_branco">Voltar</button>
         </div>
     </form>
 </div>

@@ -23,93 +23,97 @@ $result = $conn->query($sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Consultas</title>
+    <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
-            text-align: center;
+        hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+            opacity: 0.5;
         }
-        .container {
-            width: 80%;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+
+        .botoes-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .botao-acao {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
             border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        h2 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            color: #333;
+
+        .botao-acao:hover {
+            background-color: #3e8e41;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
         }
-        th, td {
+
+        table th, table td {
             padding: 10px;
+            border: 1px solid #ccc;
             text-align: left;
-            border-bottom: 1px solid #ddd;
         }
-        th {
-            background-color: #eee;
-            font-weight: bold;
-        }
-        tr:hover {
+
+        table th {
             background-color: #f2f2f2;
         }
-        nav {
-            background-color: #f5f5f5; /* Cinza claro para combinar com o tema */
-            padding: 12px 0;
-            text-align: center;
-            border-bottom: 0px solid #ddd; /* Linha sutil para separar do conteúdo */
-            margin-bottom:30px;
-        }
 
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        nav ul li {
-            display: inline;
-            margin: 0 15px;
-        }
-
-        nav ul li a {
-            color: #333; /* Texto escuro para contraste */
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            cursor: pointer;
             text-decoration: none;
-            font-size: 18px;
-            padding: 8px 12px;
-            transition: 0.3s;
+            color: white;
+            border-radius: 5px;
+            margin: 2px;
+            display: inline-block;
         }
 
-        nav ul li a:hover {
-            background-color: #ddd; /* Efeito hover suave */
-            border-radius: 5px;
-            padding: 8px 15px;
+        .edit { background: #f0ad4e; }
+        .delete { background: #d9534f; }
+        .add { background: #5bc0de; }
+        .menu { background: #6c757d; }
+
+        .button-row {
+            width: 90%;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: space-between;
         }
 
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
 </head>
 <body>
-<nav>
-    <ul>
-        <li><a href="menu.php"><i class="fa fa-house"></i> Início</a></li>
-        <li><a href="pacientes.php"><i class="fa fa-user"></i> CADASTRAR PACIENTE</a></li> 
-        <li><a href="#" onclick="window.print();"><i class="fa fa-print"></i> Imprimir</a></li>
-        <li><a href="logout.php"><i class="fa fa-sign-out-alt"></i> Sair</a></li>
-    </ul>
-</nav>
+    <div class="container" style="margin-top:40px; width: 80%; max-width: 80%;">
+        <h2>LISTA DE CONSULTAS</h2>
 
+        <div class="button-row" style="margin-bottom:-5px">
+        <a href="#" onclick="window.print()" class="botao-acao"><i class="fa fa-print"></i>Imprimir</a>
+        <a href="menu.php" class="btn menu"><i class="fa fa-arrow-left"></i> Voltar ao Menu</a>
+        </div>
 
-    <div class="container">
-        <h2>Lista de Consultas</h2>
+        <?php
+        $totalRegistros = $result->num_rows;
+        echo "<p><strong>Total de registros encontrados:</strong> {$totalRegistros}</p>";
+        ?>
+        <hr>
 
         <table>
             <tr>
@@ -120,7 +124,7 @@ $result = $conn->query($sql);
             </tr>
 
             <?php
-            if ($result->num_rows > 0) {
+            if ($totalRegistros > 0) {
                 while ($row = $result->fetch_assoc()) {
                     $data_br = date('d/m/Y H:i:s', strtotime($row['dt_consulta']));
                     echo "<tr>
@@ -137,7 +141,6 @@ $result = $conn->query($sql);
         </table>
         <br>
     </div>
-
 </body>
 </html>
 

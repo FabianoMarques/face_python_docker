@@ -21,27 +21,21 @@ if ($imagem_decodificada === false) {
 $arquivo_temp = tempnam(sys_get_temp_dir(), "captura_") . ".jpg";
 file_put_contents($arquivo_temp, $imagem_decodificada);
 
-$arquivo = "detectar_faces.py";
-
 // Executar script Python
-$command = "python3 ". escapeshellarg($arquivo) ." ". escapeshellarg($arquivo_temp) . " imagens/ 2>&1";
-//var_dump($command);
+$command = "python3 detectar_faces.py " . escapeshellarg($arquivo_temp) . " imagens/ 2>&1";
 $output = shell_exec($command);
 $resultado = json_decode(trim($output), true);
 
 unlink($arquivo_temp); // Exclui a imagem temporária
 
-if (!$resultado || isset($resultado["error"])) {
-    $mensagem = isset($resultado["error"]) ? urlencode($resultado["error"]) : "Erro no reconhecimento facial.";
-    echo "resultado.php?status=erro&mensagem={$mensagem}";
+if (!$resultado || isset($resultado['erro'])) {
+    echo "resultado.php?status=erro&mensagem=Não foi possível identificar nenhuma face.";
     exit;
 }
 
-$status = isset($resultado["status"]) ? urlencode($resultado["status"]) : "Desconhecido";
-$score = isset($resultado["score"]) ? urlencode($resultado["score"]) : "N/A";
-$imagem = isset($resultado["imagem"]) ? urlencode($resultado["imagem"]) : "Nenhuma";
-
-// Em vez de header("Location: ..."), retornamos a URL para o JavaScript
-echo "resultado.php?status={$status}&score={$score}&imagem={$imagem}";
+// Redirecionar com resultado
+$score = urlencode($resultado['score']);
+$imagem = urlencode($resultado['imagem']);
+echo "resultado.php?status=sucesso&score={$score}&imagem={$imagem}";
 exit;
 ?>

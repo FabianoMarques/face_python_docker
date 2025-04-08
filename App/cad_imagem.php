@@ -6,73 +6,19 @@
 <head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="botoes.css">
     <title>Capturar e Salvar Foto</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        h1 {
-            color: #333;
-        }
-        canvas {
-            border: 2px solid #333;
-            border-radius: 8px;
-        }
-        input, button {
-            width: 640px; /* Largura igual à webcam */
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        input {
-            border: 1px solid #ccc;
-        }
-        button {
-            height: 50px;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.3s;
-        }
-        .capture-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .capture-btn:hover {
-            background-color: #45a049;
-        }
-        .menu-btn {
-            background-color: #ccc;
-            color: black;
-        }
-        .menu-btn:hover {
-            background-color: #bbb;
-        }
-        .loading {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            color: rgb(255, 0, 0);
-            background: rgba(255, 255, 255, 0.7);
-            padding: 10px;
-            border-radius: 5px;
+        video {
+            transform: scaleX(-1);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 4px solid #2980b9;
+            width: 560px;
+            height: 480px;
+            object-fit: cover;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -80,18 +26,20 @@
 
     <div class="container">
         <h1><strong>CAPTURAR E SALVAR FOTO</strong></h1>
-        <canvas id="canvas" width="640" height="480"></canvas>
-        <input type="text" id="nomeImagem" placeholder="Digite o nome da imagem">
-        <button id="capturar" class="capture-btn">CAPTURAR E SALVAR</button>
-        <button class="menu-btn" onclick="location.href='menu.php'">MENU</button>
+        
+        <!-- Adicionando o elemento de vídeo -->
+        <video id="video" autoplay playsinline></video>
+
+        <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+
+        <input type="text" id="nomeImagem" placeholder="Digite o nome da imagem" class="input_estilizado">
+        <button id="capturar" class="btn_verde">CAPTURAR E SALVAR</button>
+        <button class="btn_branco" onclick="location.href='menu.php'">MENU</button>
         <div id="loading" class="loading"><strong>PROCESSANDO... POR FAVOR AGUARDE!!!</strong></div>
     </div>
 
     <script>
-        const video = document.createElement("video");
-        video.setAttribute("autoplay", "");
-        video.setAttribute("playsinline", ""); 
-
+        const video = document.getElementById("video");
         const canvas = document.getElementById("canvas");
         const context = canvas.getContext("2d");
 
@@ -137,7 +85,12 @@
 
             loadingDiv.style.display = 'block';
 
-            contextOculto.drawImage(video, 0, 0, canvasOculto.width, canvasOculto.height);
+            //contextOculto.drawImage(video, 0, 0, canvasOculto.width, canvasOculto.height);
+            contextOculto.save(); // salva o estado original
+            contextOculto.scale(-1, 1); // inverte horizontalmente
+            contextOculto.drawImage(video, -canvasOculto.width, 0, canvasOculto.width, canvasOculto.height);
+            contextOculto.restore(); // restaura o estado original
+
             const dataUrl = canvasOculto.toDataURL("image/png");
 
             fetch("cad_salvar_foto.php", {
