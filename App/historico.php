@@ -21,7 +21,7 @@ $sql = "
         profissional,
         valor_hora,
         qtd_horas_feitas,
-        dt_consulta,
+        dt_consulta, 
         total
     FROM historico
     WHERE 1=1
@@ -40,7 +40,17 @@ if (!empty($filtro_data_inicio) && !empty($filtro_data_fim)) {
     $params[] = $filtro_data_fim;
 }
 
-$sql .= " ORDER BY dt_consulta DESC";
+// Consulta ajustada para pegar apenas o maior valor de horas por paciente no mês
+$sql .= "
+    AND (qtd_horas_feitas) = (
+        SELECT MAX(qtd_horas_feitas)
+        FROM historico AS h2
+        WHERE h2.nome_paciente = historico.nome_paciente
+        AND YEAR(h2.dt_consulta) = YEAR(historico.dt_consulta)
+        AND MONTH(h2.dt_consulta) = MONTH(historico.dt_consulta)
+    )
+ORDER BY dt_consulta DESC
+";
 
 // Preparando a consulta
 $stmt = $conn->prepare($sql);
@@ -82,7 +92,6 @@ function gerarXML($result) {
 if (isset($_GET['exportar_xml'])) {
     gerarXML($result);
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -209,7 +218,7 @@ if (isset($_GET['exportar_xml'])) {
                         <td><?= htmlspecialchars($row['profissional']) ?></td>
                         <td>R$ <?= number_format($row['valor_hora'], 2, ',', '.') ?></td>
                         <td><?= $row['qtd_horas_feitas'] ?></td>
-                        <td><?= date('d/m/Y', strtotime($row['dt_consulta'])) ?></td>
+                        <td><?= date('d/m/Y H:i', strtotime($row['dt_consulta'])) ?></td>
                         <td>R$ <?= number_format($row['total'], 2, ',', '.') ?></td>
                     </tr>
                 <?php endwhile; ?>
@@ -229,3 +238,4 @@ if (isset($_GET['exportar_xml'])) {
 if ($stmt) $stmt->close();
 $conn->close();
 ?>
+
