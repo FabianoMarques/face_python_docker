@@ -1,18 +1,23 @@
 <?php
 session_start();
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Recebendo parâmetros
 $status = isset($_GET['status']) ? htmlspecialchars($_GET['status']) : "Desconhecido";
 $mensagem = isset($_GET['mensagem']) ? htmlspecialchars($_GET['mensagem']) : "";
-$score = isset($_GET['score']) ? htmlspecialchars($_GET['score']) : "";
+$score = isset($_GET['score']) ? (float) $_GET['score'] : 1.0;
 $imagem = isset($_GET['imagem']) ? htmlspecialchars($_GET['imagem']) : "";
 $nomeArquivo = !empty($imagem) ? pathinfo(basename($imagem), PATHINFO_FILENAME) : "";
 
+// Conexão com banco
 require_once '../db.php';
-
 $db = new Database();
 $conn = $db->getConnection();
 
+// Buscar paciente
 $result_paciente = $conn->query("SELECT * FROM paciente WHERE CPF = '{$nomeArquivo}'");
-if ($result_paciente->num_rows > 0) {
+if ($result_paciente && $result_paciente->num_rows > 0) {
     while ($row = $result_paciente->fetch_assoc()) {
         $_SESSION['paciente_nome'] = $row["nome"];
         $_SESSION['paciente_profissional'] = $row["profissional"];
@@ -23,16 +28,34 @@ if ($result_paciente->num_rows > 0) {
 date_default_timezone_set('America/Sao_Paulo');
 $data_hora = date('Y-m-d H:i:s');
 
-//A CONSULTA VAI RETORNAR A ULTIMA CONSULTA (IDCONSULTA) PARA AQUELE PACIENTE (IDPACIENTE)
-$result_consulta = $conn->query("SELECT * FROM consultas WHERE idpaciente = '{$_SESSION['idpaciente']}' ORDER BY idconsulta DESC LIMIT 1");
-if ($result_consulta && $result_consulta->num_rows > 0) {
-    $row = $result_consulta->fetch_assoc();
-    echo $dtConsulta = $row['dt_consulta'];
-    $dataUltimaConsulta = DateTime::createFromFormat('Y-m-d H:i:s', $dtConsulta);
-    $dataAtual = new DateTime();
-    $intervaloSegundos = $dataAtual->getTimestamp() - $dataUltimaConsulta->getTimestamp();
-    var_dump($intervaloSegundos);
+// Buscar última consulta se o paciente foi encontrado
+$intervaloSegundos = PHP_INT_MAX;
+$dtConsulta = '';
+
+if (isset($_SESSION['idpaciente'])) {
+    $result_consulta = $conn->query("SELECT * FROM consultas WHERE idpaciente = '{$_SESSION['idpaciente']}' ORDER BY idconsulta DESC LIMIT 1");
+
+    if ($result_consulta && $result_consulta->num_rows > 0) {
+        $row = $result_consulta->fetch_assoc();
+        $dtConsulta = $row['dt_consulta'];
+        $qtd_horas_feitas = $row['qtd_horas_feitas'];
+
+        $dataUltimaConsulta = DateTime::createFromFormat('Y-m-d H:i:s.u', $dtConsulta);
+        if (!$dataUltimaConsulta) {
+            $dataUltimaConsulta = DateTime::createFromFormat('Y-m-d H:i:s', $dtConsulta);
+        }
+
+        if ($dataUltimaConsulta) {
+            $dataAtual = new DateTime();
+            $intervaloSegundos = $dataAtual->getTimestamp() - $dataUltimaConsulta->getTimestamp();
+        } else {
+            echo "Erro ao interpretar a data da última consulta: $dtConsulta<br>";
+        }
+    }
+
 }
+
+//var_dump($intervaloSegundos );
 ?>
 
 <!DOCTYPE html>
@@ -53,24 +76,19 @@ if ($result_consulta && $result_consulta->num_rows > 0) {
             height: 100vh;
             margin: 0;
         }
-        .result-container, .result-container2 {
+        .result-container {
             width: 90%;
             max-width: 800px;
             border-radius: 8px;
             padding: 10px;
-        }
-        .result-container {
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .image-container img {
-            max-width: 120px;
-            height: auto;
-            border-radius: 5px;
+            height: 400px;
+            text-align: center;
         }
         .mensagem {
             font-size: 1.2em;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
         .contador {
             font-size: 1em;
@@ -79,75 +97,53 @@ if ($result_consulta && $result_consulta->num_rows > 0) {
 </head>
 <body>
 
-<div class="result-container" style="height: 400px;">
-<?php 
-if ($score < 0.40) {
-    if ($status != "erro") { //não estou usando essse if porque quando não é identificado um rosto a captura não é disparada
-        if ($result_paciente->num_rows > 0) {
-            if ($intervaloSegundos > 3600) {
-?>
-                <table style="width: 100%; border-collapse: collapse; text-align: center;">
-                    <tr>
-                        <td>
-                            <i class="fas fa-check-circle" style="font-size: 60px; color: #27ae60; margin-bottom:20px"></i>
-                            <h2>Seja bem-vindo(a) <?php echo $_SESSION['paciente_nome']; ?></h2>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h2 style="color: red;">Entrada registrada em <?php echo $data_hora; ?></h2>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h3>Seu horário hoje é com '<?php echo $_SESSION['paciente_profissional']; ?>'</h3>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <br><hr style="background-color:#dbe9f4; border-color: #dbe9f4; width: 50%;"><br>
-                            <div class="mensagem">Você será redirecionado em <span class="contador" id="contador">5</span> segundos...</div>
-                        </td>
-                    </tr>
-                </table>
+<div class="result-container">
 <?php
+if ($score < 0.40) {
+    if ($status != "erro") { //NÃO ESTOU USANDO POIS A CAPTURA SÓ É FEITA QUANDO UM ROSTO É ENCONTRADO
+        if ($result_paciente && $result_paciente->num_rows > 0) {
+            if ($intervaloSegundos > 3600) {
+                echo "<i class='fas fa-check-circle' style='font-size: 60px; color: #27ae60; margin-bottom:20px'></i>";
+                echo "<h2>Seja bem-vindo(a) {$_SESSION['paciente_nome']}</h2>";
+                echo "<h2 style='color: red;'>Entrada registrada em $data_hora</h2>";
+                echo "<h3>Seu horário hoje é com '{$_SESSION['paciente_profissional']}'</h3>";
+                echo "<br><hr style='background-color:#dbe9f4; border-color: #dbe9f4; width: 50%;'><br>";
+                echo "<div class='mensagem'>Você será redirecionado em <span class='contador' id='contador'>5</span> segundos...</div>";
+
+                //SE FOR A PRIMEIRA CONSULTA O VALOR VAI SER  1 SE NÃO VAI SOMAR O QUE TEM + 1
+                if(!empty($qtd_horas_feitas)){ $qtd_horas_feitas_ =  $qtd_horas_feitas + 1; }else{ $qtd_horas_feitas_ =  1; };
                 $idPaciente = (int) $_SESSION['idpaciente'];
                 $profissional = $_SESSION['paciente_profissional'];
-                $result2 = $conn->query("INSERT INTO consultas (idpaciente, profissional, dt_consulta) VALUES ($idPaciente, '$profissional', '$data_hora')");
+
+                $result2 = $conn->query("INSERT INTO consultas (idpaciente, profissional, qtd_horas_feitas, dt_consulta) VALUES ($idPaciente, '$profissional', '$qtd_horas_feitas_', '$data_hora')");
                 if ($conn->affected_rows <= 0) {
-                    echo "Erro ao cadastrar consulta.";
+                    echo "<p style='color:red'>Erro ao cadastrar consulta.</p>";
                 }
                 $db->closeConnection();
+                // Sinaliza que deve redirecionar
+                $redirect = true;
             } else {
-                $dataFormatada = DateTime::createFromFormat('Y-m-d H:i:s', $dtConsulta)->format('d/m/Y  \à\s  H:i:s');
-                echo "<div style='text-align:center;font-size:20px;margin-top:15%;'>
-                        <h1>Ooops!!!</h1><b>VOCÊ JÁ REGISTROU SUA ENTRADA <br>EM '". $dataFormatada."'</b><br> (Intervalo minimo de uma hora)<br>
-                        <a href='./'><button style='margin-top:15px;padding:10px 20px;font-size:16px;color:white;border:none;border-radius:5px;' class='btn_verde'>Voltar</button></a>
-                      </div>";
+                $dataFormatada = DateTime::createFromFormat('Y-m-d H:i:s', $dtConsulta)->format('d/m/Y \à\s H:i:s');
+                echo "<h1 style='margin-top:15%'>Ooops!!!</h1><b>VOCÊ JÁ REGISTROU SUA ENTRADA EM '$dataFormatada'</b><br>(Intervalo mínimo de uma hora)";
+                echo "<br><a href='./'><button class='btn_verde' style='margin-top:15px;'>Voltar</button></a>";
             }
         } else {
-            echo "<div style='text-align:center;font-size:20px;margin-top:40px;margin-top:15%;'>
-                    <h1>Ooops!!!</h1><b>NENHUM REGISTRO ENCONTRADO!!!</b><br> 
-                    <a href='./'><button style='margin-top:15px;padding:10px 20px;font-size:16px;background-color:#900;color:white;border:none;border-radius:5px;'>Tentar Novamente</button></a>
-                  </div>";
+            echo "<h1 style='margin-top:15%'>Ooops!!!</h1><b>NENHUM REGISTRO ENCONTRADO!!!</b><br>";
+            echo "<a href='./'><button style='margin-top:15px;' class='btn_vermelho'>Tentar Novamente</button></a>";
         }
     } else {
-        //não estou usando esssa mensagem porque quando não é identificado um rosto a captura não é disparada
-        echo "<div style='text-align:center;font-size:20px;margin-top:40px;margin-top:15%;'>
-                <h1>Ooops!!!</h1>Nenhum rosto encontrado na imagem capturada!!!<br> 
-                <a href='./'><button style='margin-top:15px;padding:10px 20px;font-size:16px;background-color:#900;color:white;border:none;border-radius:5px;'>Tentar Novamente</button></a>
-              </div>";
+        //NÃO ESTOU USANDO POIS A CAPTURA SÓ É FEITA QUANDO UM ROSTO É ENCONTRADO
+        echo "<h1 style='margin-top:15%'>Ooops!!!</h1>Nenhum rosto encontrado na imagem capturada!!!<br>";
+        echo "<a href='./'><button class='btn_vermelho' style='margin-top:15px;'>Tentar Novamente</button></a>";
     }
 } else {
-    echo "<div style='text-align:center;font-size:20px;margin-top:40px; margin-top:15%;'>
-            <h1>Ooops!!!</h1><b>IMAGEM NÃO IDENTIFICADA COM SEGURANÇA!!!</b><br>($score)<br>
-            <a href='./'><button style='margin-top:15px;padding:10px 20px;font-size:16px;background-color:#900;color:white;border:none;border-radius:5px;'>Tentar Novamente</button></a>
-          </div>";
+    echo "<h1 style='margin-top:15%'>Ooops!!!</h1><b>IMAGEM NÃO IDENTIFICADA COM SEGURANÇA!!!</b><br>($score)<br>";
+    echo "<a href='./'><button class='btn_vermelho' style='margin-top:15px;'>Tentar Novamente</button></a>";
 }
 ?>
 </div>
 
-
+<?php if (isset($redirect) && $redirect): ?>
 <script>
   let segundos = 5;
   const contador = document.getElementById("contador");
@@ -162,6 +158,7 @@ if ($score < 0.40) {
     }
   }, 1000);
 </script>
+<?php endif; ?>
 
 </body>
 </html>
