@@ -51,6 +51,7 @@ $db->closeConnection();
         <button class="btn_verde" onclick="window.open('/App/', '_blank')">Ler Imagem</button>
         <button class="btn_verde" onclick="window.location.href='/App/cad_imagem.php'">Cadastrar Imagem</button>
         <button class="btn_vermelho" onclick="window.location.href='/App/exc_imagem.php'">Excluir Imagem</button>
+        <button class="btn_branco" onclick="window.location.href='/App/cad_plano.php'">Planos</button>
         <button class="btn_branco" onclick="window.location.href='/App/cad_paciente.php'">Pacientes</button>
         <button class="btn_branco" onclick="window.location.href='/App/relatorio.php'">Relatório</button>
         <button class="btn_branco" onclick="window.location.href='/App/logout.php'"><i class="fas fa-sign-out-alt"></i>  Sair</button>
