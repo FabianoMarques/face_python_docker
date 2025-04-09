@@ -164,7 +164,7 @@ if (!empty($filtro_mes) || !empty($filtro_profissional)) {
     margin: 0 auto;
     padding: 20px;
     font-family: Arial, sans-serif;">
-    <h2>RELATÓRIO DE CONSULTAS</h2>
+    <h2>CONSULTAS PARA RELATÓRIO </h2>
     <hr>
     <form method="get" style="margin-bottom: 5px;">
         <label for="mes">Filtrar por mês:</label>
@@ -176,11 +176,22 @@ if (!empty($filtro_mes) || !empty($filtro_profissional)) {
         <button type="submit">Filtrar</button>
     </form>
     <hr>
-    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 70%;">
+    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10%;">
         <button onclick="location.href='menu.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
         <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
-    </div>
+ 
+        <?php if ($result && $result->num_rows > 0): ?>
+                <button onclick="location.href='relatorio-historico.php?mes=<?= urlencode($filtro_mes) ?>&profissional=<?= urlencode($filtro_profissional) ?>'"
+                style="margin-top: 0px; background-color:rgb(252, 246, 168);">
+                    <i class="fas fa-save"></i> Gerar Histórico
+                </button>
+        <?php endif; ?>
 
+        <button onclick="location.href='historico.php'"
+            style="margin-top: 0px; background-color:rgb(241, 241, 241);">
+            <i class="fas fa-history"></i> Ver Histórico
+        </button>
+   </div>
     <table style="width: 100%;">
         <thead>
             <tr>
@@ -188,8 +199,8 @@ if (!empty($filtro_mes) || !empty($filtro_profissional)) {
                 <th>Plano</th>
                 <th>Profissional</th>
                 <th>Valor da Hora</th>
-                <th>Horas Feitas (Consulta)</th>
-                <th>Data e Hora da Consulta</th>
+                <th>Horas Feitas (Consulta) *</th>
+                <th>Data e Hora da Consulta **</th>
                 <th>Total (R$)</th>
             </tr>
         </thead>
@@ -213,6 +224,10 @@ if (!empty($filtro_mes) || !empty($filtro_profissional)) {
             <?php endif; ?>
         </tbody>
     </table>
+    <p style="text-align: left; color: darkgrey;">
+        * número de consultas até o presente momento. <br>
+        ** data e hora da última consulta.
+    </p>
 </div>
 
 </body>
