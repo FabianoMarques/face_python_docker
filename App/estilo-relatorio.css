@@ -133,3 +133,11 @@ form button {
 form button:hover {
     background-color: #45a049;
 }
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, #e7e7e7, #e7e7e7);
+    margin: 30px auto;
+    width: 100%;
+    border-radius: 10px;
+}
