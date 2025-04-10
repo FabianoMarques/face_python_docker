@@ -22,6 +22,8 @@ if ($result_paciente && $result_paciente->num_rows > 0) {
         $_SESSION['paciente_nome'] = $row["nome"];
         $_SESSION['paciente_profissional'] = $row["profissional"];
         $_SESSION['idpaciente'] = $row["idpaciente"];
+        $_SESSION['vencimento'] = $row["vencimento"];
+        $_SESSION['status'] = $row["status"];
     }
 }
 
@@ -65,6 +67,7 @@ if (isset($_SESSION['idpaciente'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultado da Verificação</title>
     <link rel="stylesheet" href="botoes.css">
+    <link rel="stylesheet" href="avisos.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -103,25 +106,32 @@ if ($score < 0.40) {
     if ($status != "erro") { //NÃO ESTOU USANDO POIS A CAPTURA SÓ É FEITA QUANDO UM ROSTO É ENCONTRADO
         if ($result_paciente && $result_paciente->num_rows > 0) {
             if ($intervaloSegundos > 3600) {
-                echo "<i class='fas fa-check-circle' style='font-size: 60px; color: #27ae60; margin-bottom:20px'></i>";
-                echo "<h2>Seja bem-vindo(a) {$_SESSION['paciente_nome']}</h2>";
-                echo "<h2 style='color: red;'>Entrada registrada em $data_hora</h2>";
-                echo "<h3>Seu horário hoje é com '{$_SESSION['paciente_profissional']}'</h3>";
-                echo "<br><hr style='background-color:#dbe9f4; border-color: #dbe9f4; width: 50%;'><br>";
-                echo "<div class='mensagem'>Você será redirecionado em <span class='contador' id='contador'>5</span> segundos...</div>";
+                if ($_SESSION['vencimento']=="ativo") {
+                    echo "<i class='fas fa-check-circle' style='font-size: 60px; color: #27ae60; margin-bottom:10px; margin-top:35px'></i>";
+                    echo "<h2>Seja bem-vindo(a) {$_SESSION['paciente_nome']}</h2>";
+                    echo "<h2 style='color: red;'>Entrada registrada em $data_hora</h2>";
+                    echo "<h3>Seu horário hoje é com '{$_SESSION['paciente_profissional']}'</h3>";
+                    echo "<div class='aviso atencao'>Não esqueça que seu vencimento á todo dia '{$_SESSION['vencimento']}'.</div>";
+                    echo "<div class='mensagem'>Você será redirecionado em <span class='contador' id='contador'>5</span> segundos...</div>";
 
-                //SE FOR A PRIMEIRA CONSULTA O VALOR VAI SER  1 SE NÃO VAI SOMAR O QUE TEM + 1
-                if(!empty($qtd_horas_feitas)){ $qtd_horas_feitas_ =  $qtd_horas_feitas + 1; }else{ $qtd_horas_feitas_ =  1; };
-                $idPaciente = (int) $_SESSION['idpaciente'];
-                $profissional = $_SESSION['paciente_profissional'];
+                    //SE FOR A PRIMEIRA CONSULTA O VALOR VAI SER  1 SE NÃO VAI SOMAR O QUE TEM + 1
+                    if(!empty($qtd_horas_feitas)){ $qtd_horas_feitas_ =  $qtd_horas_feitas + 1; }else{ $qtd_horas_feitas_ =  1; };
+                    $idPaciente = (int) $_SESSION['idpaciente'];
+                    $profissional = $_SESSION['paciente_profissional'];
 
-                $result2 = $conn->query("INSERT INTO consultas (idpaciente, profissional, qtd_horas_feitas, dt_consulta) VALUES ($idPaciente, '$profissional', '$qtd_horas_feitas_', '$data_hora')");
-                if ($conn->affected_rows <= 0) {
-                    echo "<p style='color:red'>Erro ao cadastrar consulta.</p>";
+                    $result2 = $conn->query("INSERT INTO consultas (idpaciente, profissional, qtd_horas_feitas, dt_consulta) VALUES ($idPaciente, '$profissional', '$qtd_horas_feitas_', '$data_hora')");
+                    if ($conn->affected_rows <= 0) {
+                        echo "<p style='color:red'>Erro ao cadastrar consulta.</p>";
+                    }
+                    $db->closeConnection();
+                    // Sinaliza que deve redirecionar
+                    $redirect = true;
+
+                } else {
+                    echo "<h1 style='margin-top:15%'>Ooops!!!</h1><b>OUVE UM PROBLEMA COM SEU CADASTRO, PROCURE A RECEPÇÃO!!!";
+                    echo "<br><a href='./'><button class='btn_verde' style='margin-top:15px;'>Voltar</button></a>";
                 }
-                $db->closeConnection();
-                // Sinaliza que deve redirecionar
-                $redirect = true;
+
             } else {
                 $dataFormatada = DateTime::createFromFormat('Y-m-d H:i:s', $dtConsulta)->format('d/m/Y \à\s H:i:s');
                 echo "<h1 style='margin-top:15%'>Ooops!!!</h1><b>VOCÊ JÁ REGISTROU SUA ENTRADA EM '$dataFormatada'</b><br>(Intervalo mínimo de uma hora)";

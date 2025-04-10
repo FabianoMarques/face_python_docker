@@ -1,0 +1,39 @@
+.aviso {
+    padding: 12px 20px;
+    margin: 10px auto;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    width: fit-content;
+    max-width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    font-family: sans-serif;
+}
+
+.aviso.sucesso {
+    background-color: #e6f4ea;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.aviso.atencao {
+    background-color: #fff8e1;
+    color: #f9a825;
+    border: 1px solid #ffe082;
+}
+
+.aviso.cuidado {
+    background-color: #fdecea;
+    color: #c62828;
+    border: 1px solid #f5c6cb;
+}
+
+.aviso i {
+    font-size: 1.2em;
+}
+
+

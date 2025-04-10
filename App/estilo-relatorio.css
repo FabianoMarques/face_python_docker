@@ -141,3 +141,15 @@ hr {
     width: 100%;
     border-radius: 10px;
 }
+
+
+.vencimento-hoje {
+    background-color: #ffeaea;
+    color: red;
+    font-weight: bold;
+    text-align: center;
+}
+.vencimento-hoje i {
+    color: red;
+    margin-right: 5px;
+}
