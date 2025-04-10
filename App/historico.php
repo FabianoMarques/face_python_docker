@@ -124,16 +124,7 @@ if (isset($_GET['exportar_xml'])) {
             border-radius: 8px;
         }
 
-        form button {
-            padding: 6px 14px;
-            font-size: 14px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+     
 
         form button:hover {
             background-color: #45a049;
@@ -176,25 +167,38 @@ if (isset($_GET['exportar_xml'])) {
     <hr>
 
     <!-- Filtro de pesquisa -->
-    <form method="get">
-        <label for="profissional">Filtrar por profissional:</label>
-        <input type="text" name="profissional" id="profissional" placeholder="Digite o nome" value="<?= htmlspecialchars($filtro_profissional) ?>">
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+        <form method="get" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0;">
+            <label for="profissional">Filtrar por profissional:</label>
+            <input type="text" name="profissional" id="profissional" placeholder="Digite o nome"
+                value="<?= htmlspecialchars($filtro_profissional) ?>">
 
-        <label for="data_inicio">Data Início:</label>
-        <input type="date" name="data_inicio" id="data_inicio" value="<?= htmlspecialchars($filtro_data_inicio) ?>">
+            <label for="data_inicio">Data Início:</label>
+            <input type="date" name="data_inicio" id="data_inicio"
+                value="<?= htmlspecialchars($filtro_data_inicio) ?>">
 
-        <label for="data_fim">Data Fim:</label>
-        <input type="date" name="data_fim" id="data_fim" value="<?= htmlspecialchars($filtro_data_fim) ?>">
+            <label for="data_fim">Data Fim:</label>
+            <input type="date" name="data_fim" id="data_fim"
+                value="<?= htmlspecialchars($filtro_data_fim) ?>">
 
-        <button type="submit">Filtrar</button>
-    </form>
+            <button type="submit">Filtrar</button>
+        </form>
+
+        <form method="get" action="csv.php" style="margin: 0;">
+            <input type="hidden" name="profissional" value="<?= htmlspecialchars($filtro_profissional) ?>">
+            <input type="hidden" name="data_inicio" value="<?= htmlspecialchars($filtro_data_inicio) ?>">
+            <input type="hidden" name="data_fim" value="<?= htmlspecialchars($filtro_data_fim) ?>">
+            <button type="submit" class="btn_branco">
+                <i class="fas fa-file-csv"></i> EXPORTAR CSV
+            </button>
+        </form>
+    </div>
+
     <hr>
 
-    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 20%;">
-        <button onclick="location.href='relatorio.php'">Voltar</button>
+    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 70%;">
+        <button onclick="location.href='relatorio.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
         <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
-        <!-- Botão para exportar para XML -->
-        <a href="?exportar_xml=true"><button>Exportar para XML</button></a>
     </div>
 
     <table>
