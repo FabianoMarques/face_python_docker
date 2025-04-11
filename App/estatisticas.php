@@ -151,10 +151,11 @@ foreach ($data as $prof => $mesValores) {
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 30px 40px;
-            background-color: #ffffff;
+            margin-top: -50px;
+            padding: 40px;
+            background-color:rgba(255, 255, 255, 0);
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.03);
+            /* box-shadow: 0 0 20px rgba(0,0,0,0.03); */
             text-align: center;
         }
     </style>
@@ -217,8 +218,8 @@ foreach ($data as $prof => $mesValores) {
         </tbody>
     </table>
 
-    <br><br><h2>Valores Recebidos por Profissional (maior número de horas/mês)</h2>
-    <canvas id="grafico" width="800" height="400"></canvas>
+    <br><h2 style="">Valores Recebidos por Profissional (maior número de horas/mês)</h2>
+    <canvas id="grafico" style="width: 1000px; height: 300px;"></canvas>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
@@ -244,11 +245,12 @@ foreach ($data as $prof => $mesValores) {
             data: chartData,
             options: {
                 responsive: true,
+                maintainAspectRatio: true,
                 plugins: {
                     legend: { position: 'bottom' },
                     title: {
                         display: true,
-                        text: 'Valores Recebidos por Profissional (maior número de horas/mês)'
+                        text: ''
                     },
                     datalabels: {
                         anchor: 'end',

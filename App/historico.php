@@ -149,6 +149,7 @@ $result = $stmt->get_result();
     <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10%;">
         <button onclick="location.href='relatorio.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
         <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        <button onclick="location.href='estatisticas.php'"><i class="fas fa-chart-line"></i>  Estatisticas</button>
     </div>
     <table style="width: 100%;">
         <thead>
