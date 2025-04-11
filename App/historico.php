@@ -5,37 +5,23 @@ require_once '../db.php';
 $db = new Database();
 $conn = $db->getConnection();
 
+// FILTROS
 $filtro_mes = isset($_GET['mes']) ? $_GET['mes'] : '';
 $filtro_profissional = isset($_GET['profissional']) ? trim($_GET['profissional']) : '';
-$result = false;
 
+// INÍCIO DA QUERY
 $sql = "
-    SELECT
-    nome_paciente,
-    nome_plano,
-    profissional,
-    valor_plano,
-    qtd_horas_feitas,
-    valor_hora_colaborador,
-    total_colaborador,
-    data_consulta,
-    percentual,
-    MIN(data_registro) AS data_registro -- ou MAX, depende do que você quiser
-FROM historico
-WHERE 1=1
-GROUP BY
-    nome_paciente,
-    nome_plano,
-    profissional,
-    valor_plano,
-    qtd_horas_feitas,
-    valor_hora_colaborador,
-    total_colaborador,
-    data_consulta,
-    percentual
-
+    SELECT h1.*
+    FROM historico h1
+    INNER JOIN (
+        SELECT
+            profissional,
+            DATE_FORMAT(data_consulta, '%Y-%m') as mes_ano,
+            MAX(qtd_horas_feitas) as max_horas
+        FROM historico
+        WHERE 1=1
 ";
-
+// PARÂMETROS E FILTROS
 $params = [];
 $types = '';
 
@@ -51,12 +37,24 @@ if (!empty($filtro_profissional)) {
     $types .= 's';
 }
 
-$sql .= " ORDER BY nome_paciente, data_consulta";
+$sql .= "
+        GROUP BY profissional, mes_ano
+    ) h2
+    ON h1.profissional = h2.profissional
+    AND DATE_FORMAT(h1.data_consulta, '%Y-%m') = h2.mes_ano
+    AND h1.qtd_horas_feitas = h2.max_horas
+";
 
+// PREPARAR E EXECUTAR
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("Erro no prepare: " . $conn->error);
+}
+
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
 }
+
 $stmt->execute();
 $result = $stmt->get_result();
 ?>

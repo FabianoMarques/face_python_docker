@@ -5,17 +5,13 @@ require_once '../db.php';
 $db = new Database();
 $conn = $db->getConnection();
 
-// Coletar filtros
 $ano = $_GET['ano'] ?? date('Y');
 $mesFiltro = $_GET['mes'] ?? '';
 $profissional = $_GET['profissional'] ?? '';
 
-// Consulta para o gráfico
+// Etapa 1: Buscar maior qtd_horas_feitas por profissional e mês
 $sql = "
-    SELECT 
-        profissional,
-        DATE_FORMAT(data_consulta, '%Y-%m') AS mes,
-        SUM(total_colaborador) AS total_mes
+    SELECT profissional, DATE_FORMAT(data_consulta, '%Y-%m') AS mes, MAX(qtd_horas_feitas) AS max_horas
     FROM historico
     WHERE YEAR(data_consulta) = ?
 ";
@@ -27,271 +23,264 @@ if ($mesFiltro !== '') {
     $params[] = $mesFiltro;
     $types .= 'i';
 }
-
 if ($profissional !== '') {
     $sql .= " AND profissional = ?";
     $params[] = $profissional;
     $types .= 's';
 }
 
-$sql .= " GROUP BY profissional, mes ORDER BY mes, profissional";
+$sql .= " GROUP BY profissional, mes";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
+$maxHoras = [];
+while ($row = $result->fetch_assoc()) {
+    $maxHoras[$row['profissional']][$row['mes']] = $row['max_horas'];
+}
+
+// Etapa 2: Buscar os totais correspondentes
 $data = [];
 $meses = [];
 
-while ($row = $result->fetch_assoc()) {
-    $mesLabel = $row['mes'];
-    $prof = $row['profissional'];
-    $total = (float)$row['total_mes'];
-
-    $data[$prof][$mesLabel] = $total;
-    $meses[$mesLabel] = true;
+foreach ($maxHoras as $prof => $mesesHoras) {
+    foreach ($mesesHoras as $mes => $horas) {
+        $query = "
+            SELECT total_colaborador
+            FROM historico
+            WHERE profissional = ? AND DATE_FORMAT(data_consulta, '%Y-%m') = ? AND qtd_horas_feitas = ?
+            ORDER BY id DESC LIMIT 1
+        ";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ssi", $prof, $mes, $horas);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        if ($res && $row = $res->fetch_assoc()) {
+            $data[$prof][$mes] = (float)$row['total_colaborador'];
+            $meses[$mes] = true;
+        }
+    }
 }
 
 ksort($meses);
 $meses = array_keys($meses);
 
-// Obter lista de profissionais para o filtro
+// Lista de profissionais
 $profissionais_result = $conn->query("SELECT DISTINCT profissional FROM historico ORDER BY profissional");
 $profissionais = [];
 while ($row = $profissionais_result->fetch_assoc()) {
     $profissionais[] = $row['profissional'];
 }
 
-// Consulta para a tabela
-$sql2 = "
-    SELECT 
-        DATE_FORMAT(data_consulta, '%Y-%m') AS mes,
-        profissional,
-        SUM(total_colaborador) AS total
-    FROM historico
-    WHERE YEAR(data_consulta) = ?
-";
-
-$params2 = [$ano];
-$types2 = 'i';
-
-if ($mesFiltro !== '') {
-    $sql2 .= " AND MONTH(data_consulta) = ?";
-    $params2[] = $mesFiltro;
-    $types2 .= 'i';
-}
-
-if ($profissional !== '') {
-    $sql2 .= " AND profissional = ?";
-    $params2[] = $profissional;
-    $types2 .= 's';
-}
-
-$sql2 .= " GROUP BY mes, profissional ORDER BY mes, profissional";
-
-$stmt2 = $conn->prepare($sql2);
-$stmt2->bind_param($types2, ...$params2);
-$stmt2->execute();
-$result2 = $stmt2->get_result();
-
+// Preparar dados para gráfico/tabela
 $dados = [];
 $totaisPorMes = [];
 $totalGeral = 0;
 
-if ($result2 && $result2->num_rows > 0) {
-    while ($row = $result2->fetch_assoc()) {
-        $mesLabel = $row['mes'];
-        $prof = $row['profissional'];
-        $total = (float)$row['total'];
-
-        $dados[$mesLabel][$prof] = $total;
-        $totaisPorMes[$mesLabel] = ($totaisPorMes[$mesLabel] ?? 0) + $total;
-        $totalGeral += $total;
+foreach ($data as $prof => $mesValores) {
+    foreach ($mesValores as $mes => $valor) {
+        $dados[$mes][$prof] = $valor;
+        $totaisPorMes[$mes] = ($totaisPorMes[$mes] ?? 0) + $valor;
+        $totalGeral += $valor;
     }
 }
-
-$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Estatísticas Contábeis</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             margin: 30px;
-            background: #f8f9fa;
+            background-color: #f9f9f9;
+            color: #333;
         }
         h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 25px;
+        }
+        label {
+            margin-right: 20px;
+        }
+        select, input, button {
+            padding: 6px 10px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
             text-align: center;
-            color: #333;
+        }
+        thead {
+            background-color: #34495e;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        canvas {
+            margin-top: 40px;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-        }
-        canvas {
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        form {
-            margin-bottom: 30px;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-        }
-        form select, form button {
-            padding: 6px 12px;
-            font-size: 14px;
-        }
-        table {
-            width: 100%;
-            margin-top: 40px;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 30px 40px;
+            background-color: #ffffff;
             border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
+            box-shadow: 0 0 20px rgba(0,0,0,0.03);
             text-align: center;
-        }
-        th {
-            background: #007bff;
-            color: white;
-        }
-        tfoot {
-            background: #f1f1f1;
-            font-weight: bold;
-        }
-        tr:nth-child(even) td {
-            background: #f9f9f9;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Estatísticas Contábeis</h2>
+<div class="container">
+<h2>Estatísticas Contábeis (<?= $ano ?><?= $mesFiltro ? " - Mês: $mesFiltro" : "" ?>)</h2>
 
-        <form method="get">
-            <label for="ano">Ano:</label>
-            <select name="ano" id="ano">
-                <?php for ($y = date('Y'); $y >= 2020; $y--): ?>
-                    <option value="<?= $y ?>" <?= $ano == $y ? 'selected' : '' ?>><?= $y ?></option>
-                <?php endfor; ?>
-            </select>
+<form method="GET">
+    <label>Ano: <input type="number" name="ano" value="<?= $ano ?>"></label>
+    <label>Mês:
+        <select name="mes">
+            <option value="">Todos</option>
+            <?php for ($m = 1; $m <= 12; $m++): ?>
+                <option value="<?= $m ?>" <?= ($mesFiltro == $m) ? 'selected' : '' ?>>
+                    <?= str_pad($m, 2, '0', STR_PAD_LEFT) ?>
+                </option>
+            <?php endfor; ?>
+        </select>
+    </label>
+    <label>Profissional:
+        <select name="profissional">
+            <option value="">Todos</option>
+            <?php foreach ($profissionais as $p): ?>
+                <option value="<?= $p ?>" <?= ($profissional == $p) ? 'selected' : '' ?>><?= $p ?></option>
+            <?php endforeach; ?>
+        </select>
+    </label>
+    <button type="submit">Filtrar</button>
+</form>
 
-            <label for="mes">Mês:</label>
-            <select name="mes" id="mes">
-                <option value="">Todos</option>
-                <?php for ($m = 1; $m <= 12; $m++): ?>
-                    <option value="<?= $m ?>" <?= $mesFiltro == $m ? 'selected' : '' ?>>
-                        <?= str_pad($m, 2, '0', STR_PAD_LEFT) ?>
-                    </option>
-                <?php endfor; ?>
-            </select>
-
-            <label for="profissional">Profissional:</label>
-            <select name="profissional" id="profissional">
-                <option value="">Todos</option>
-                <?php foreach ($profissionais as $prof): ?>
-                    <option value="<?= $prof ?>" <?= $profissional == $prof ? 'selected' : '' ?>>
-                        <?= $prof ?>
-                    </option>
+<?php if (!empty($dados)): ?>
+    <table>
+        <thead>
+            <tr>
+                <th>Mês</th>
+                <?php foreach ($data as $prof => $val): ?>
+                    <th><?= $prof ?></th>
                 <?php endforeach; ?>
-            </select>
-
-            <button type="submit">Filtrar</button>
-        </form>
-
-        <canvas id="grafico" height="100"></canvas>
-
-        <br><br><h2>Relatório de Faturamento</h2>
-        <table>
-            <thead>
+                <th>Total do Mês</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($meses as $mes): ?>
                 <tr>
-                    <th>Mês</th>
-                    <th>Profissional</th>
-                    <th>Valor Recebido (R$)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($dados as $mesLabel => $profissionais): ?>
-                    <?php foreach ($profissionais as $prof => $valor): ?>
-                        <tr>
-                            <td><?= $mesLabel ?></td>
-                            <td><?= $prof ?></td>
-                            <td>R$ <?= number_format($valor, 2, ',', '.') ?></td>
-                        </tr>
+                    <td><?= $mes ?></td>
+                    <?php foreach ($data as $prof => $mesVals): ?>
+                        <td><?= isset($mesVals[$mes]) ? number_format($mesVals[$mes], 2, ',', '.') : '-' ?></td>
                     <?php endforeach; ?>
-                    <tr style="font-weight:bold;">
-                        <td colspan="2">Total do mês <?= $mesLabel ?></td>
-                        <td>R$ <?= number_format($totaisPorMes[$mesLabel], 2, ',', '.') ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="2">Total Geral</td>
-                    <td>R$ <?= number_format($totalGeral, 2, ',', '.') ?></td>
+                    <td><strong><?= number_format($totaisPorMes[$mes], 2, ',', '.') ?></strong></td>
                 </tr>
-            </tfoot>
-        </table>
-    </div>
+            <?php endforeach; ?>
+            <tr style="background-color: #ecf0f1;">
+                <td><strong>Total Geral</strong></td>
+                <?php foreach ($data as $prof => $mesVals): ?>
+                    <td><strong><?= number_format(array_sum($mesVals), 2, ',', '.') ?></strong></td>
+                <?php endforeach; ?>
+                <td><strong><?= number_format($totalGeral, 2, ',', '.') ?></strong></td>
+            </tr>
+        </tbody>
+    </table>
 
+    <br><br><h2>Valores Recebidos por Profissional (maior número de horas/mês)</h2>
+    <canvas id="grafico" width="800" height="400"></canvas>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script>
         const ctx = document.getElementById('grafico').getContext('2d');
-        const chart = new Chart(ctx, {
+        const chartData = {
+            labels: <?= json_encode($meses) ?>,
+            datasets: [
+                <?php foreach ($data as $prof => $mesVals): ?>
+                {
+                    label: "<?= $prof ?>",
+                    data: <?= json_encode(array_values(array_replace(array_fill_keys($meses, 0), $mesVals))) ?>,
+                    backgroundColor: 'rgba(<?= rand(0,255) ?>,<?= rand(0,255) ?>,<?= rand(0,255) ?>,0.6)',
+                    borderColor: 'rgba(0,0,0,0.1)',
+                    borderWidth: 1
+                },
+                <?php endforeach; ?>
+            ]
+        };
+
+        const myChart = new Chart(ctx, {
             type: 'bar',
-            data: {
-                labels: <?= json_encode($meses) ?>,
-                datasets: [
-                    <?php foreach ($data as $prof => $valores): ?>
-                    {
-                        label: <?= json_encode($prof) ?>,
-                        data: <?= json_encode(array_map(fn($m) => $valores[$m] ?? 0, $meses)) ?>,
-                        backgroundColor: 'rgba(<?= rand(50,200) ?>, <?= rand(50,200) ?>, <?= rand(50,200) ?>, 0.7)',
-                        borderColor: 'rgba(0,0,0,0.8)',
-                        borderWidth: 1
-                    },
-                    <?php endforeach; ?>
-                ]
-            },
+            data: chartData,
             options: {
                 responsive: true,
                 plugins: {
                     legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Valores Recebidos por Profissional (maior número de horas/mês)'
+                    },
                     datalabels: {
                         anchor: 'end',
                         align: 'top',
-                        formatter: (value) => value ? 'R$ ' + value.toFixed(2).replace('.', ',') : '',
-                        font: { weight: 'bold' },
-                        color: '#000'
+                        formatter: function(value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR');
+                        },
+                        font: {
+                            weight: 'bold'
+                        }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        title: { display: true, text: 'Valor Total (R$)' }
-                    },
-                    x: {
-                        title: { display: true, text: 'Mês' }
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + value.toLocaleString('pt-BR');
+                            }
+                        }
                     }
                 }
             },
             plugins: [ChartDataLabels]
         });
     </script>
+
+    <?php else: ?>
+        <p><strong>Nenhum dado encontrado para os filtros selecionados.</strong></p>
+    <?php endif; ?>
+
+
+</div>
 </body>
 </html>
