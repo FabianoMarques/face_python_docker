@@ -106,7 +106,7 @@ if ($score < 0.40) {
     if ($status != "erro") { //NÃO ESTOU USANDO POIS A CAPTURA SÓ É FEITA QUANDO UM ROSTO É ENCONTRADO
         if ($result_paciente && $result_paciente->num_rows > 0) {
             if ($intervaloSegundos > 3600) {
-                if ($_SESSION['vencimento']=="ativo") {
+                if ($_SESSION['status']=="Ativo") {
                     echo "<i class='fas fa-check-circle' style='font-size: 60px; color: #27ae60; margin-bottom:10px; margin-top:35px'></i>";
                     echo "<h2>Seja bem-vindo(a) {$_SESSION['paciente_nome']}</h2>";
                     echo "<h2 style='color: red;'>Entrada registrada em $data_hora</h2>";

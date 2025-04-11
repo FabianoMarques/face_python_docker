@@ -3,7 +3,9 @@ require_once '../db.php';
 $conn = (new Database())->getConnection();
 
 $nome = "";
-$valor_hora = "";
+$valor = "";
+$numero_aulas = "";
+$percentual = "";
 $idplano = "";
 
 // Edição: carregar dados existentes
@@ -17,7 +19,9 @@ if (isset($_GET["editar"])) {
     $dados = $result->fetch_assoc();
 
     $nome = $dados["nome"];
-    $valor_hora = $dados["valor_hora"];
+    $valor = $dados["valor"];
+    $numero_aulas = $dados["numero_aulas"];
+    $percentual = $dados["percentual"];
     $stmt->close();
 }
 
@@ -25,16 +29,18 @@ if (isset($_GET["editar"])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $idplano = $_POST["idplano"];
     $nome = $_POST["nome"];
-    $valor_hora = $_POST["valor_hora"];
+    $valor = $_POST["valor"];
+    $numero_aulas = $_POST["numero_aulas"];
+    $percentual = $_POST["percentual"];
 
     if (!empty($idplano)) {
-        $sql = "UPDATE planos SET nome = ?, valor_hora = ? WHERE idplano = ?";
+        $sql = "UPDATE planos SET nome = ?, valor = ?, numero_aulas = ?, percentual = ? WHERE idplano = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sdi", $nome, $valor_hora, $idplano);
+        $stmt->bind_param("sdiii", $nome, $valor, $numero_aulas, $percentual, $idplano);
     } else {
-        $sql = "INSERT INTO planos (nome, valor_hora) VALUES (?, ?)";
+        $sql = "INSERT INTO planos (nome, valor, numero_aulas, percentual) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sd", $nome, $valor_hora);
+        $stmt->bind_param("sdii", $nome, $valor, $numero_aulas, $percentual);
     }
 
     $stmt->execute();
@@ -69,22 +75,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <div class="container" >
-        <h2><?php echo $idplano ? "Editar Plano" : "Cadastrar Novo Plano"; ?></h2>
+    <div class="container" style="text-align: left;">
+        <h2 style="text-align: center;"><?php echo $idplano ? "Editar Plano" : "Cadastrar Novo Plano"; ?></h2>
 
-        <form method="POST" action="form-plano.php" style="text-align: left;">
+        <form method="POST" action="form-plano.php">
             <input type="hidden" name="idplano" value="<?php echo $idplano; ?>">
 
             <label for="nome">Nome do Plano:</label>
-            <input type="text" name="nome" required value="<?php echo htmlspecialchars($nome); ?>" style="text-align: left;">
+            <input type="text" name="nome" required value="<?php echo htmlspecialchars($nome); ?>">
 
-            <label for="valor_hora">Valor por Hora (R$):</label>
-            <input type="number" step="0.01" name="valor_hora" required value="<?php echo htmlspecialchars($valor_hora); ?>" style="text-align: left;">
+            <label for="valor">Valor do Plano (R$):</label>
+            <input type="number" step="0.01" name="valor" required value="<?php echo htmlspecialchars($valor); ?>">
+
+            <label for="numero_aulas">Número de Aulas:</label>
+            <input type="number" name="numero_aulas" required value="<?php echo htmlspecialchars($numero_aulas); ?>">
+
+            <label for="percentual">Percentual (%):</label>
+            <input type="number" name="percentual" required value="<?php echo htmlspecialchars($percentual); ?>">
 
             <button type="submit" class="btn_verde"><?php echo $idplano ? "Atualizar" : "Cadastrar"; ?></button>
         </form>
-        <button type="button" class="btn_branco" onclick="window.location.href='cad_plano.php'">Voltar</button>
 
+        <button type="button" class="btn_branco" onclick="window.location.href='cad_plano.php'">Voltar</button>
     </div>
 </body>
 </html>

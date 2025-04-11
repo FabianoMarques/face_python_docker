@@ -5,93 +5,60 @@ require_once '../db.php';
 $db = new Database();
 $conn = $db->getConnection();
 
-// Parâmetros de filtro
+$filtro_mes = isset($_GET['mes']) ? $_GET['mes'] : '';
 $filtro_profissional = isset($_GET['profissional']) ? trim($_GET['profissional']) : '';
-$filtro_data_inicio = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : '';
-$filtro_data_fim = isset($_GET['data_fim']) ? $_GET['data_fim'] : '';
-
 $result = false;
-$params = [];
 
-// Construção da consulta SQL
 $sql = "
-    SELECT DISTINCT
-        nome_paciente,
-        nome_plano,
-        profissional,
-        valor_hora,
-        qtd_horas_feitas,
-        dt_consulta, 
-        total
-    FROM historico
-    WHERE 1=1
+    SELECT
+    nome_paciente,
+    nome_plano,
+    profissional,
+    valor_plano,
+    qtd_horas_feitas,
+    valor_hora_colaborador,
+    total_colaborador,
+    data_consulta,
+    percentual,
+    MIN(data_registro) AS data_registro -- ou MAX, depende do que você quiser
+FROM historico
+WHERE 1=1
+GROUP BY
+    nome_paciente,
+    nome_plano,
+    profissional,
+    valor_plano,
+    qtd_horas_feitas,
+    valor_hora_colaborador,
+    total_colaborador,
+    data_consulta,
+    percentual
+
 ";
 
-// Filtro por profissional
+$params = [];
+$types = '';
+
+if (!empty($filtro_mes)) {
+    $sql .= " AND DATE_FORMAT(data_consulta, '%Y-%m') = ?";
+    $params[] = $filtro_mes;
+    $types .= 's';
+}
+
 if (!empty($filtro_profissional)) {
     $sql .= " AND profissional LIKE ?";
     $params[] = '%' . $filtro_profissional . '%';
+    $types .= 's';
 }
 
-// Filtro por intervalo de data
-if (!empty($filtro_data_inicio) && !empty($filtro_data_fim)) {
-    $sql .= " AND dt_consulta BETWEEN ? AND ?";
-    $params[] = $filtro_data_inicio;
-    $params[] = $filtro_data_fim;
-}
+$sql .= " ORDER BY nome_paciente, data_consulta";
 
-// Consulta ajustada para pegar apenas o maior valor de horas por paciente no mês
-$sql .= "
-    AND (qtd_horas_feitas) = (
-        SELECT MAX(qtd_horas_feitas)
-        FROM historico AS h2
-        WHERE h2.nome_paciente = historico.nome_paciente
-        AND YEAR(h2.dt_consulta) = YEAR(historico.dt_consulta)
-        AND MONTH(h2.dt_consulta) = MONTH(historico.dt_consulta)
-    )
-ORDER BY dt_consulta DESC
-";
-
-// Preparando a consulta
 $stmt = $conn->prepare($sql);
-if (count($params) > 0) {
-    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
 }
 $stmt->execute();
 $result = $stmt->get_result();
-
-// Função para gerar o arquivo XML
-function gerarXML($result) {
-    if ($result->num_rows > 0) {
-        $xml = new SimpleXMLElement('<historico/>');
-
-        while ($row = $result->fetch_assoc()) {
-            $registro = $xml->addChild('registro');
-            $registro->addChild('nome_paciente', $row['nome_paciente']);
-            $registro->addChild('nome_plano', $row['nome_plano']);
-            $registro->addChild('profissional', $row['profissional']);
-            $registro->addChild('valor_hora', $row['valor_hora']);
-            $registro->addChild('qtd_horas_feitas', $row['qtd_horas_feitas']);
-            $registro->addChild('dt_consulta', $row['dt_consulta']);
-            $registro->addChild('total', $row['total']);
-        }
-
-        // Definindo o nome do arquivo XML
-        $fileName = 'historico_' . date('Ymd_His') . '.xml';
-
-        // Definindo o cabeçalho de resposta para download do XML
-        header('Content-type: text/xml');
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
-        echo $xml->asXML();
-        exit;
-    } else {
-        echo "Nenhum dado encontrado para exportar.";
-    }
-}
-
-if (isset($_GET['exportar_xml'])) {
-    gerarXML($result);
-}
 ?>
 
 <!DOCTYPE html>
@@ -116,15 +83,24 @@ if (isset($_GET['exportar_xml'])) {
             color: #333;
         }
 
-        form input[type="text"],
-        form input[type="date"] {
+        form input[type="month"],
+        form input[type="text"] {
             padding: 6px 10px;
             font-size: 14px;
             border: 1px solid #ccc;
             border-radius: 8px;
         }
 
-     
+        form button {
+            padding: 6px 14px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
 
         form button:hover {
             background-color: #45a049;
@@ -138,7 +114,7 @@ if (isset($_GET['exportar_xml'])) {
         }
 
         table {
-            width: 100%;
+            width: 1200px;
             border-collapse: collapse;
             margin: 0 auto;
         }
@@ -152,87 +128,68 @@ if (isset($_GET['exportar_xml'])) {
         th {
             background-color: #f4f4f4;
         }
-
-        .button-row {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-        }
     </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 1300px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+<div class="container" style="max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;">
     <h2>HISTÓRICO DE CONSULTAS</h2>
     <hr>
+    <form method="get" style="margin-bottom: 5px;">
+        <label for="mes">Filtrar por mês:</label>
+        <input type="month" name="mes" id="mes" value="<?= htmlspecialchars($filtro_mes) ?>">
 
-    <!-- Filtro de pesquisa -->
-    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-        <form method="get" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0;">
-            <label for="profissional">Filtrar por profissional:</label>
-            <input type="text" name="profissional" id="profissional" placeholder="Digite o nome"
-                value="<?= htmlspecialchars($filtro_profissional) ?>">
+        <label for="profissional">Filtrar por profissional:</label>
+        <input type="text" name="profissional" id="profissional" placeholder="Digite o nome" value="<?= htmlspecialchars($filtro_profissional) ?>">
 
-            <label for="data_inicio">Data Início:</label>
-            <input type="date" name="data_inicio" id="data_inicio"
-                value="<?= htmlspecialchars($filtro_data_inicio) ?>">
-
-            <label for="data_fim">Data Fim:</label>
-            <input type="date" name="data_fim" id="data_fim"
-                value="<?= htmlspecialchars($filtro_data_fim) ?>">
-
-            <button type="submit">Filtrar</button>
-        </form>
-
-        <form method="get" action="csv.php" style="margin: 0;">
-            <input type="hidden" name="profissional" value="<?= htmlspecialchars($filtro_profissional) ?>">
-            <input type="hidden" name="data_inicio" value="<?= htmlspecialchars($filtro_data_inicio) ?>">
-            <input type="hidden" name="data_fim" value="<?= htmlspecialchars($filtro_data_fim) ?>">
-            <button type="submit" class="btn_branco">
-                <i class="fas fa-file-csv"></i> EXPORTAR CSV
-            </button>
-        </form>
-    </div>
-
+        <button type="submit">Filtrar</button>
+    </form>
     <hr>
-
-    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 70%;">
+    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10%;">
         <button onclick="location.href='relatorio.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
         <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
     </div>
-
-    <table>
+    <table style="width: 100%;">
         <thead>
-            <tr>
-                <th>Paciente</th>
-                <th>Plano</th>
-                <th>Profissional</th>
-                <th>Valor da Hora</th>
-                <th>Horas Feitas</th>
-                <th>Data da Consulta</th>
-                <th>Total (R$)</th>
-            </tr>
+        <tr>
+            <th>Paciente</th>
+            <th>Plano</th>
+            <th>Profissional</th>
+            <th>Valor/Plano (R$)</th>
+            <th>Horas Feitas</th>
+            <th>Hora/Plano</th>
+            <th>Total Colaborador (R$)</th>
+            <th>Data Consulta</th>
+            <th>Registro/Log</th>
+        </tr>
         </thead>
         <tbody>
-            <?php if ($result && $result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($row['nome_paciente']) ?></td>
-                        <td><?= htmlspecialchars($row['nome_plano']) ?></td>
-                        <td><?= htmlspecialchars($row['profissional']) ?></td>
-                        <td>R$ <?= number_format($row['valor_hora'], 2, ',', '.') ?></td>
-                        <td><?= $row['qtd_horas_feitas'] ?></td>
-                        <td><?= date('d/m/Y H:i', strtotime($row['dt_consulta'])) ?></td>
-                        <td>R$ <?= number_format($row['total'], 2, ',', '.') ?></td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
+        <?php if ($result && $result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td colspan="7">Nenhum dado encontrado com os filtros selecionados.</td>
+                    <td><?= htmlspecialchars($row['nome_paciente']) ?></td>
+                    <td><?= htmlspecialchars($row['nome_plano']) ?></td>
+                    <td><?= htmlspecialchars($row['profissional']) ?></td>
+                    <td>R$ <?= number_format($row['valor_plano'], 2, ',', '.') ?></td>
+                    <td><?= $row['qtd_horas_feitas'] ?></td>
+                    <td>R$ <?= number_format($row['valor_hora_colaborador'], 2, ',', '.') ?> </td>
+                    <td>R$ <?= number_format($row['total_colaborador'], 2, ',', '.') ?> (<?= intval($row['percentual']) ?>%)</td>
+                    <td><?= date('d/m/Y H:i', strtotime($row['data_consulta'])) ?></td>
+                    <td><?= date('d/m/Y H:i:s', strtotime($row['data_registro'])) ?></td>
                 </tr>
-            <?php endif; ?>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="9">Nenhum histórico encontrado<?= $filtro_mes || $filtro_profissional ? ' para os filtros selecionados.' : '.' ?></td>
+            </tr>
+        <?php endif; ?>
         </tbody>
     </table>
+
+    <p style="text-align: left;">* Dados armazenados permanentemente no histórico para controle. <br> ** Registro feito ao clicar em "Gerar Histórico".</p>
 </div>
 
 </body>
@@ -242,4 +199,3 @@ if (isset($_GET['exportar_xml'])) {
 if ($stmt) $stmt->close();
 $conn->close();
 ?>
-

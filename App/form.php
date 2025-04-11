@@ -3,19 +3,17 @@ require_once '../db.php';
 $conn = (new Database())->getConnection();
 
 $id = $nome = $cpf = $profissional = $email = $idplano = $vencimento = $status = "";
-$vencimento = "";
 
-// Buscar todos os planos
+// Buscar planos
 $planos = [];
 $resultPlanos = $conn->query("SELECT idplano, nome FROM planos");
 while ($row = $resultPlanos->fetch_assoc()) {
     $planos[$row['idplano']] = $row['nome'];
 }
 
-// Verificar se é edição
+// Se for edição
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    $vencimento = $result['vencimento'];
     $stmt = $conn->prepare("SELECT * FROM paciente WHERE idpaciente=?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
@@ -32,7 +30,7 @@ if (isset($_GET['id'])) {
     $stmt->close();
 }
 
-// Cadastrar ou atualizar paciente
+// Cadastro ou atualização
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $vencimento = intval($_POST['vencimento']);
@@ -41,21 +39,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cpf = trim($_POST['cpf']);
     $email = trim($_POST['email']);
     $profissional = trim($_POST['profissional']);
-    $vencimento = trim($_POST['vencimento']);
     $status = trim($_POST['status']);
 
     if (!empty($nome) && !empty($cpf) && !empty($email) && !empty($profissional) && !empty($idplano) && !empty($vencimento) && !empty($status)) {
         if (!empty($id)) {
-            // Atualizar
-            $stmt = $conn->prepare("UPDATE paciente SET idplano=?, nome=?, CPF=?, email=?, profissional=?, vencimento=?, status=? WHERE idpaciente=?");
-            $stmt->bind_param("issssisi", $idplano, $nome, $cpf, $email, $profissional, $vencimento, $status, $id);
-
+            $stmt = $conn->prepare("UPDATE paciente SET email=?, vencimento=?, status=? WHERE idpaciente=?");
+            $stmt->bind_param("sisi", $email, $vencimento, $status, $id);
             $mensagem = $stmt->execute() ? "✅ Paciente atualizado com sucesso!" : "❌ Erro ao atualizar: " . $stmt->error;
         } else {
-            // Cadastrar
             $stmt = $conn->prepare("INSERT INTO paciente (idplano, nome, CPF, email, profissional, vencimento, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->bind_param("issssis", $idplano, $nome, $cpf, $email, $profissional, $vencimento, $status);
-            
             $mensagem = $stmt->execute() ? "✅ Paciente cadastrado com sucesso!" : "❌ Erro ao cadastrar: " . $stmt->error;
         }
         $stmt->close();
@@ -69,15 +62,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Paciente</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="botoes.css">
     <link rel="stylesheet" href="estilo.css">
     <style>
         .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; display: block; text-align: left;}
-        input, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; text-align: left; }
+        label { font-weight: bold; display: block; text-align: left; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
@@ -88,30 +79,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <form method="post">
         <input type="hidden" name="id" value="<?= $id ?>">
-        
+        <input type="hidden" name="idplano" value="<?= $idplano ?>">
+        <input type="hidden" name="nome" value="<?= $nome ?>">
+        <input type="hidden" name="cpf" value="<?= $cpf ?>">
+        <input type="hidden" name="profissional" value="<?= $profissional ?>">
+
         <div class="form-group">
             <label>Nome:</label>
-            <input type="text" name="nome" value="<?= $nome ?>" required>
+            <input type="text" value="<?= $nome ?>" readonly style="text-align: left;">
         </div>
-        
+
         <div class="form-group">
             <label>CPF:</label>
-            <input type="text" name="cpf" value="<?= $cpf ?>" required>
+            <input type="text" value="<?= $cpf ?>" readonly style="text-align: left;">
         </div>
-        
+
         <div class="form-group">
             <label>Email:</label>
-            <input type="email" name="email" value="<?= $email ?>" required>
+            <input type="email" name="email" value="<?= $email ?>" required style="text-align: left;">
         </div>
-        
+
         <div class="form-group">
             <label>Profissional:</label>
-            <input type="text" name="profissional" value="<?= $profissional ?>" required>
+            <input type="text" value="<?= $profissional ?>" readonly style="text-align: left;">
         </div>
-        
+
         <div class="form-group">
             <label>Plano:</label>
-            <select name="idplano" required>
+            <select disabled>
                 <option value="">Selecione um plano</option>
                 <?php foreach ($planos as $idPlano => $nomePlano): ?>
                     <option value="<?= $idPlano ?>" <?= $idPlano == $idplano ? 'selected' : '' ?>><?= $nomePlano ?></option>
@@ -142,8 +137,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button type="submit" class="btn_verde">Salvar</button>
             <button type="button" onclick="window.location.href='cad_paciente.php'" class="btn_branco">Voltar</button>
         </div>
-
-        
     </form>
 </div>
 

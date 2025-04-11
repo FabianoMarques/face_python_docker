@@ -9,83 +9,72 @@ $filtro_mes = isset($_GET['mes']) ? $_GET['mes'] : '';
 $filtro_profissional = isset($_GET['profissional']) ? trim($_GET['profissional']) : '';
 $result = false;
 
-if (!empty($filtro_mes) || !empty($filtro_profissional)) {
-    $sql = "
+$sql_base = "
+    SELECT 
+        p.nome AS nome_paciente,
+        pl.nome AS nome_plano,
+        c.profissional,
+        pl.valor,
+        pl.numero_aulas,
+        pl.percentual,
+        CASE 
+            WHEN pl.numero_aulas > 0 THEN pl.valor / pl.numero_aulas 
+            ELSE 0 
+        END AS valor_hora,
+        c.qtd_horas_feitas,
+        c.dt_consulta,
+        CASE 
+            WHEN pl.numero_aulas > 0 THEN (pl.valor / pl.numero_aulas) * (pl.percentual / 100)
+            ELSE 0 
+        END AS valor_aula_colaborador,
+        CASE 
+            WHEN pl.numero_aulas > 0 THEN (pl.valor / pl.numero_aulas) * (pl.percentual / 100) * c.qtd_horas_feitas
+            ELSE 0 
+        END AS total
+    FROM consultas c
+    INNER JOIN paciente p ON c.idpaciente = p.idpaciente
+    INNER JOIN planos pl ON p.idplano = pl.idplano
+    INNER JOIN (
         SELECT 
-            p.nome AS nome_paciente,
-            pl.nome AS nome_plano,
-            c.profissional,
-            pl.valor_hora,
-            c.qtd_horas_feitas,
-            c.dt_consulta,
-            (pl.valor_hora * c.qtd_horas_feitas) AS total
-        FROM consultas c
-        INNER JOIN paciente p ON c.idpaciente = p.idpaciente
-        INNER JOIN planos pl ON p.idplano = pl.idplano
-        INNER JOIN (
-            SELECT 
-                idpaciente,
-                DATE_FORMAT(dt_consulta, '%Y-%m') AS mes,
-                MAX(qtd_horas_feitas) AS max_horas
-            FROM consultas
-            GROUP BY idpaciente, mes
-        ) sub ON c.idpaciente = sub.idpaciente
-        AND DATE_FORMAT(c.dt_consulta, '%Y-%m') = sub.mes
-        AND c.qtd_horas_feitas = sub.max_horas
-        WHERE 1 = 1
-    ";
+            idpaciente,
+            DATE_FORMAT(dt_consulta, '%Y-%m') AS mes,
+            MAX(qtd_horas_feitas) AS max_horas
+        FROM consultas
+        GROUP BY idpaciente, mes
+    ) sub ON c.idpaciente = sub.idpaciente
+    AND DATE_FORMAT(c.dt_consulta, '%Y-%m') = sub.mes
+    AND c.qtd_horas_feitas = sub.max_horas
+";
 
-    $params = [];
-    $types = '';
+$params = [];
+$types = '';
 
-    if (!empty($filtro_mes)) {
-        $sql .= " AND DATE_FORMAT(c.dt_consulta, '%Y-%m') = ?";
-        $params[] = $filtro_mes;
-        $types .= 's';
-    }
+if (!empty($filtro_mes)) {
+    $sql_base .= " AND DATE_FORMAT(c.dt_consulta, '%Y-%m') = ?";
+    $params[] = $filtro_mes;
+    $types .= 's';
+}
 
-    if (!empty($filtro_profissional)) {
-        $sql .= " AND c.profissional LIKE ?";
-        $params[] = '%' . $filtro_profissional . '%';
-        $types .= 's';
-    }
+if (!empty($filtro_profissional)) {
+    $sql_base .= " AND c.profissional LIKE ?";
+    $params[] = '%' . $filtro_profissional . '%';
+    $types .= 's';
+}
 
-    $sql .= " ORDER BY p.nome, c.dt_consulta";
+$sql_base .= " ORDER BY p.nome, c.dt_consulta";
 
-    $stmt = $conn->prepare($sql);
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
-    }
-    $stmt->execute();
-    $result = $stmt->get_result();
-} else {
-    $sql = "
-        SELECT 
-            p.nome AS nome_paciente,
-            pl.nome AS nome_plano,
-            c.profissional,
-            pl.valor_hora,
-            c.qtd_horas_feitas,
-            c.dt_consulta,
-            (pl.valor_hora * c.qtd_horas_feitas) AS total
-        FROM consultas c
-        INNER JOIN paciente p ON c.idpaciente = p.idpaciente
-        INNER JOIN planos pl ON p.idplano = pl.idplano
-        INNER JOIN (
-            SELECT 
-                idpaciente,
-                DATE_FORMAT(dt_consulta, '%Y-%m') AS mes,
-                MAX(qtd_horas_feitas) AS max_horas
-            FROM consultas
-            GROUP BY idpaciente, mes
-        ) sub ON c.idpaciente = sub.idpaciente
-        AND DATE_FORMAT(c.dt_consulta, '%Y-%m') = sub.mes
-        AND c.qtd_horas_feitas = sub.max_horas
-        ORDER BY p.nome, c.dt_consulta
-    ";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    $result = $stmt->get_result();
+$stmt = $conn->prepare($sql_base);
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+
+$percentual = null;
+if ($result && $result->num_rows > 0) {
+    $firstRow = $result->fetch_assoc();
+    $percentual = $firstRow['percentual'];
+    $result->data_seek(0); // volta ao início para o while funcionar normalmente
 }
 ?>
 
@@ -164,7 +153,7 @@ if (!empty($filtro_mes) || !empty($filtro_profissional)) {
     margin: 0 auto;
     padding: 20px;
     font-family: Arial, sans-serif;">
-    <h2>CONSULTAS PARA RELATÓRIO </h2>
+    <h2>CONSULTAS PARA RELATÓRIO</h2>
     <hr>
     <form method="get" style="margin-bottom: 5px;">
         <label for="mes">Filtrar por mês:</label>
@@ -179,56 +168,56 @@ if (!empty($filtro_mes) || !empty($filtro_profissional)) {
     <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10%;">
         <button onclick="location.href='menu.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
         <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
- 
+
         <?php if ($result && $result->num_rows > 0): ?>
-                <button onclick="location.href='relatorio-historico.php?mes=<?= urlencode($filtro_mes) ?>&profissional=<?= urlencode($filtro_profissional) ?>'"
+            <button onclick="location.href='gerar-historico.php'"
                 style="margin-top: 0px; background-color:rgb(252, 246, 168);">
-                    <i class="fas fa-save"></i> Gerar Histórico
-                </button>
+                <i class="fas fa-save"></i> Gerar Histórico
+            </button>
         <?php endif; ?>
 
         <button onclick="location.href='historico.php'"
             style="margin-top: 0px; background-color:rgb(241, 241, 241);">
             <i class="fas fa-history"></i> Ver Histórico
         </button>
-   </div>
+    </div>
     <table style="width: 100%;">
-        <thead>
+    <thead>
+    <tr>
+        <th>Paciente</th>
+        <th>Plano</th>
+        <th>Profissional</th>
+        <th>Valor/Plano (R$)</th>
+        <th>Hora/Plano (R$)</th>
+        <th>Horas/Consulta *</th>
+        <th>Hora/Colaborador</th>
+        <th>Total Colaborador (R$)</th>
+        <th>Data/Hora**</th>
+    </tr>
+    </thead>
+
+    <?php if ($result && $result->num_rows > 0): ?>
+        <?php while ($row = $result->fetch_assoc()): ?>
             <tr>
-                <th>Paciente</th>
-                <th>Plano</th>
-                <th>Profissional</th>
-                <th>Valor da Hora</th>
-                <th>Horas Feitas (Consulta) *</th>
-                <th>Data e Hora da Consulta **</th>
-                <th>Total (R$)</th>
+                <td><?= htmlspecialchars($row['nome_paciente']) ?></td>
+                <td><?= htmlspecialchars($row['nome_plano']) ?></td>
+                <td><?= htmlspecialchars($row['profissional']) ?></td>
+                <td>R$ <?= number_format($row['valor'], 2, ',', '.') ?></td>
+                <td>R$ <?= number_format($row['valor_hora'], 2, ',', '.') ?></td>
+                <td><?= $row['qtd_horas_feitas'] ?></td>
+                <td>R$ <?= number_format($row['valor_aula_colaborador'], 2, ',', '.') ?> (<?= intval($row['percentual']) ?>%)</td>
+                <td>R$ <?= number_format($row['total'], 2, ',', '.') ?></td>
+                <td><?= date('d/m/Y H:i', strtotime($row['dt_consulta'])) ?></td>
             </tr>
-        </thead>
-        <tbody>
-            <?php if ($result && $result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($row['nome_paciente']) ?></td>
-                        <td><?= htmlspecialchars($row['nome_plano']) ?></td>
-                        <td><?= htmlspecialchars($row['profissional']) ?></td>
-                        <td>R$ <?= number_format($row['valor_hora'], 2, ',', '.') ?></td>
-                        <td><?= $row['qtd_horas_feitas'] ?></td>
-                        <td><?= date('d/m/Y H:i', strtotime($row['dt_consulta'])) ?></td>
-                        <td>R$ <?= number_format($row['total'], 2, ',', '.') ?></td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="7">Nenhum dado encontrado<?= $filtro_mes || $filtro_profissional ? ' para os filtros selecionados.' : '.' ?></td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-    <p style="text-align: left; color: darkgrey;">
-        * número de consultas até o presente momento. <br>
-        ** data e hora da última consulta.
-    </p>
-</div>
+        <?php endwhile; ?>
+    <?php else: ?>
+        <tr>
+            <td colspan="9">Nenhum dado encontrado<?= $filtro_mes || $filtro_profissional ? ' para os filtros selecionados.' : '.' ?></td>
+        </tr>
+    <?php endif; ?>
+</table>
+
+    <p style="text-align: left;">* Quantidade de horas feitas até o momento. <br> ** Última data e hora do atendimento.</p>
 
 </body>
 </html>
