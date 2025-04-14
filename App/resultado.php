@@ -134,7 +134,7 @@ if ($score < 0.40) {
 
             } else {
                 $dataFormatada = DateTime::createFromFormat('Y-m-d H:i:s', $dtConsulta)->format('d/m/Y \à\s H:i:s');
-                echo "<h1 style='margin-top:15%'>Ooops!!!</h1><b>VOCÊ JÁ REGISTROU SUA ENTRADA EM '$dataFormatada'</b><br>(Intervalo mínimo de uma hora)";
+                echo "<h1 style='margin-top:15%'>Ooops!!!</h1><b><h2>Olá {$_SESSION['paciente_nome']}, </h2>VOCÊ JÁ REGISTROU SUA ENTRADA EM '$dataFormatada'</b><br>(Intervalo mínimo de uma hora)";
                 echo "<br><a href='./'><button class='btn_verde' style='margin-top:15px;'>Voltar</button></a>";
             }
         } else {
