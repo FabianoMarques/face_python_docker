@@ -124,7 +124,7 @@
     <video id="videoAuto" autoplay muted playsinline></video>
     <canvas id="canvasOverlay"></canvas>
 
-    <div class="overlay" id="capturaText">Posicione seu rosto</div>
+    <div class="overlay" id="capturaText">POSICIONE SEU ROSTO</div>
     <div class="contador" id="contador">Aguardando rosto...</div>
 
     <div class="controls" id="controlsContainer" style="display: none;">
@@ -256,12 +256,7 @@
     };
 
     refazerBtn.onclick = () => {
-      deteccoesSeguidas = 0;
-      contador.innerText = 'Posicione seu rosto';
-      video.style.display = 'block';
-      controlsContainer.style.display = 'none';
-      document.querySelector('.image-preview')?.remove();
-      aguardarDeteccao();
+    location.reload();
     };
 
     confirmarBtn.onclick = () => {
@@ -274,9 +269,9 @@
     };
 
     function desenharMiraCentral() {
-  const ctx = canvas.getContext('2d');
-  const largura = canvas.width;
-  const altura = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const largura = canvas.width;
+    const altura = canvas.height;
 
   // Aguarda o vídeo carregar para pegar as dimensões reais
   video.addEventListener('loadedmetadata', () => {
