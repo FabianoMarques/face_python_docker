@@ -158,8 +158,8 @@ $result = $stmt->get_result();
             <th>Plano</th>
             <th>Profissional</th>
             <th>Valor/Plano (R$)</th>
-            <th>Horas Feitas</th>
-            <th>Hora/Plano</th>
+            <th>Valor/Hora/Plano (R$)</th>
+            <th>Hora/Atendimento</th>
             <th>Total Colaborador (R$)</th>
             <th>Data Consulta</th>
             <th>Registro/Log</th>
@@ -173,8 +173,8 @@ $result = $stmt->get_result();
                     <td><?= htmlspecialchars($row['nome_plano']) ?></td>
                     <td><?= htmlspecialchars($row['profissional']) ?></td>
                     <td>R$ <?= number_format($row['valor_plano'], 2, ',', '.') ?></td>
-                    <td><?= $row['qtd_horas_feitas'] ?></td>
                     <td>R$ <?= number_format($row['valor_hora_colaborador'], 2, ',', '.') ?> </td>
+                    <td><?= $row['qtd_horas_feitas'] ?></td>
                     <td>R$ <?= number_format($row['total_colaborador'], 2, ',', '.') ?> (<?= intval($row['percentual']) ?>%)</td>
                     <td><?= date('d/m/Y H:i', strtotime($row['data_consulta'])) ?></td>
                     <td><?= date('d/m/Y H:i:s', strtotime($row['data_registro'])) ?></td>

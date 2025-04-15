@@ -189,8 +189,8 @@ if ($result && $result->num_rows > 0) {
         <th>Profissional</th>
         <th>Valor/Plano (R$)</th>
         <th>Hora/Plano (R$)</th>
-        <th>Horas/Consulta *</th>
-        <th>Hora/Colaborador</th>
+        <th>Horas/Colaborador *</th>
+        <th>Hora/Atendimento</th>
         <th>Total Colaborador (R$)</th>
         <th>Data/Hora**</th>
     </tr>
@@ -204,8 +204,8 @@ if ($result && $result->num_rows > 0) {
                 <td><?= htmlspecialchars($row['profissional']) ?></td>
                 <td>R$ <?= number_format($row['valor'], 2, ',', '.') ?></td>
                 <td>R$ <?= number_format($row['valor_hora'], 2, ',', '.') ?></td>
-                <td><?= $row['qtd_horas_feitas'] ?></td>
                 <td>R$ <?= number_format($row['valor_aula_colaborador'], 2, ',', '.') ?> (<?= intval($row['percentual']) ?>%)</td>
+                <td><?= $row['qtd_horas_feitas'] ?></td>
                 <td>R$ <?= number_format($row['total'], 2, ',', '.') ?></td>
                 <td><?= date('d/m/Y H:i', strtotime($row['dt_consulta'])) ?></td>
             </tr>

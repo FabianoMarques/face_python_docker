@@ -14,17 +14,22 @@ $sql_base = "
         pl.nome AS nome_plano,
         c.profissional,
         pl.valor AS valor_plano,
+        pl.numero_aulas,
+        pl.percentual,
         c.qtd_horas_feitas,
         CASE 
             WHEN pl.numero_aulas > 0 THEN pl.valor / pl.numero_aulas 
             ELSE 0 
+        END AS valor_hora_plano,
+        CASE 
+            WHEN pl.numero_aulas > 0 THEN ((pl.valor / pl.numero_aulas) * (pl.percentual / 100)) 
+            ELSE 0 
         END AS valor_hora_colaborador,
         CASE 
-            WHEN pl.numero_aulas > 0 THEN (pl.valor / pl.numero_aulas) * (pl.percentual / 100) * c.qtd_horas_feitas
+            WHEN pl.numero_aulas > 0 THEN ((pl.valor / pl.numero_aulas) * (pl.percentual / 100)) * c.qtd_horas_feitas
             ELSE 0 
         END AS total_colaborador,
-        c.dt_consulta AS data_consulta,
-        pl.percentual
+        c.dt_consulta AS data_consulta
     FROM consultas c
     INNER JOIN paciente p ON c.idpaciente = p.idpaciente
     INNER JOIN planos pl ON p.idplano = pl.idplano
@@ -57,6 +62,9 @@ if (!empty($filtro_profissional)) {
 }
 
 $stmt = $conn->prepare($sql_base);
+if (!$stmt) {
+    die("Erro ao preparar statement base: " . $conn->error);
+}
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
 }
@@ -72,34 +80,41 @@ if ($result && $result->num_rows > 0) {
         $nome_plano = $row['nome_plano'];
         $profissional = $row['profissional'];
         $valor_plano = $row['valor_plano'];
+        $numero_aulas = $row['numero_aulas'];
+        $percentual = $row['percentual'];
         $qtd_horas_feitas = $row['qtd_horas_feitas'];
+        $valor_hora_plano = $row['valor_hora_plano'];
         $valor_hora_colaborador = $row['valor_hora_colaborador'];
         $total_colaborador = $row['total_colaborador'];
         $data_consulta = $row['data_consulta'];
-        $percentual = $row['percentual'];
         $data_registro = date('Y-m-d H:i:s');
 
         // Verifica se já existe o registro
         $check_sql = "
             SELECT 1 FROM historico 
             WHERE nome_paciente = ? 
-              AND nome_plano = ?
-              AND profissional = ?
-              AND valor_plano = ?
-              AND qtd_horas_feitas = ?
+              AND nome_plano = ? 
+              AND profissional = ? 
+              AND valor_plano = ? 
+              AND qtd_horas_feitas = ? 
+              AND valor_hora_plano = ? 
               AND valor_hora_colaborador = ?
-              AND total_colaborador = ?
-              AND data_consulta = ?
+              AND total_colaborador = ? 
+              AND data_consulta = ? 
               AND percentual = ?
         ";
         $stmt_check = $conn->prepare($check_sql);
+        if (!$stmt_check) {
+            die("Erro ao preparar check: " . $conn->error);
+        }
         $stmt_check->bind_param(
-            "sssdddssi",
+            "sssddddssi",
             $nome_paciente,
             $nome_plano,
             $profissional,
             $valor_plano,
             $qtd_horas_feitas,
+            $valor_hora_plano,
             $valor_hora_colaborador,
             $total_colaborador,
             $data_consulta,
@@ -116,21 +131,28 @@ if ($result && $result->num_rows > 0) {
                     nome_plano,
                     profissional,
                     valor_plano,
+                    valor_hora_plano,
+                    n_atendimento_plano,
                     qtd_horas_feitas,
                     valor_hora_colaborador,
                     total_colaborador,
                     data_consulta,
                     percentual,
                     data_registro
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
             $stmt_insert = $conn->prepare($insert_sql);
+            if (!$stmt_insert) {
+                die("Erro ao preparar insert: " . $conn->error);
+            }
             $stmt_insert->bind_param(
-                "sssdddssis",
+                "sssddiiddsis",
                 $nome_paciente,
                 $nome_plano,
                 $profissional,
                 $valor_plano,
+                $valor_hora_plano,
+                $numero_aulas,
                 $qtd_horas_feitas,
                 $valor_hora_colaborador,
                 $total_colaborador,
