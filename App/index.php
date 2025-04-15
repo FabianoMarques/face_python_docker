@@ -46,19 +46,47 @@
       top: 10%;
       left: 50%;
       transform: translateX(-50%);
+      padding: 1rem 2rem;
+      background-color: rgba(0, 0, 0, 0.5); /* fundo semi-transparente */
+      color: #fff;
+      font-size: 1.75rem;
+      font-weight: 600;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       text-align: center;
-      font-size: 2rem;
       z-index: 10;
+      backdrop-filter: blur(4px); /* efeito vidro fosco */
     }
 
     .contador {
       position: absolute;
-      top: 20%;
+      top: 18%;
       left: 50%;
       transform: translateX(-50%);
+      padding: 1rem 2rem;
+      /* background-color: rgba(0, 0, 0, 0.5); */
+      color: #fff;
+      font-size: 2.5rem;
+      font-weight: bold;
+      color:rgb(255, 255, 255);
+      border-radius: 1rem;
+      /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
       text-align: center;
-      font-size: 2rem;
       z-index: 10;
+      backdrop-filter: blur(4px);
+      animation: popIn 0.4s ease-out;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -30%) scale(0.8);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+      }
     }
 
     .controls {
@@ -120,13 +148,16 @@
     .reference-square {
       position: absolute;
       border: 2px solid rgba(255, 255, 255, 0.6);
-      width: 550px; /* Tamanho maior do quadrado */
-      height: 750px; /* Tamanho maior do quadrado */
+      width: 650px;
+      height: 850px;
+      border-radius: 50%;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 5;
     }
+
+   
   </style>
 </head>
 <body>
@@ -138,7 +169,7 @@
     <!-- Quadrado de referência -->
     <div class="reference-square"></div>
 
-    <div class="overlay" id="capturaText" style="margin-top: 30px;">POSICIONE SEU ROSTO</div>
+    <div class="overlay" id="capturaText" style="margin-top: 0px;">POSICIONE SEU ROSTO NO CIRCULO</div>
     <div class="contador" id="contador">Aguardando rosto...</div>
 
     <div class="controls" id="controlsContainer">
