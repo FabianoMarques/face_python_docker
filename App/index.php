@@ -47,7 +47,7 @@
       left: 50%;
       transform: translateX(-50%);
       padding: 1rem 2rem;
-      background-color: rgba(0, 0, 0, 0.5); /* fundo semi-transparente */
+      background-color: rgba(0, 0, 0, 0.5); 
       color: #fff;
       font-size: 1.75rem;
       font-weight: 600;
@@ -55,7 +55,7 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       text-align: center;
       z-index: 10;
-      backdrop-filter: blur(4px); /* efeito vidro fosco */
+      backdrop-filter: blur(4px);
     }
 
     .contador {
@@ -64,13 +64,11 @@
       left: 50%;
       transform: translateX(-50%);
       padding: 1rem 2rem;
-      /* background-color: rgba(0, 0, 0, 0.5); */
       color: #fff;
       font-size: 2.5rem;
       font-weight: bold;
       color:rgb(255, 255, 255);
       border-radius: 1rem;
-      /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
       text-align: center;
       z-index: 10;
       backdrop-filter: blur(4px);
@@ -114,20 +112,6 @@
       background-color: #4338ca;
     }
 
-    .image-preview {
-      position: absolute;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 20;
-      text-align: center;
-    }
-
-    .image-preview img {
-      max-width: 80%;
-      margin-bottom: 2rem;
-    }
-
     button.confirmar {
       background-color: #22c55e;
     }
@@ -144,7 +128,6 @@
       background-color: #dc2626;
     }
 
-    /* Quadrado de referência com tamanho maior */
     .reference-square {
       position: absolute;
       border: 2px solid rgba(255, 255, 255, 0.6);
@@ -157,7 +140,6 @@
       z-index: 5;
     }
 
-   
   </style>
 </head>
 <body>
@@ -166,13 +148,12 @@
     <video id="videoAuto" autoplay muted playsinline></video>
     <canvas id="canvasOverlay"></canvas>
 
-    <!-- Quadrado de referência -->
     <div class="reference-square"></div>
 
     <div class="overlay" id="capturaText" style="margin-top: 0px;">POSICIONE SEU ROSTO NO CIRCULO</div>
     <div class="contador" id="contador">Aguardando rosto...</div>
 
-    <div class="controls" id="controlsContainer">
+    <div class="controls" id="controlsContainer" style="display: none;">
       <button id="confirmarBtn" class="confirmar">Confirmar</button>
       <button class="refazer" id="refazerBtn">Refazer</button>
     </div>
@@ -243,21 +224,6 @@
       window.location.href = url;
     }
 
-    function mostrarControles() {
-      controlsContainer.style.display = 'flex';
-    }
-
-    function mostrarImagem(imgBase64) {
-      const imagePreview = document.createElement('div');
-      imagePreview.classList.add('image-preview');
-
-      const previewImage = document.createElement('img');
-      previewImage.src = imgBase64;
-      imagePreview.appendChild(previewImage);
-
-      document.body.appendChild(imagePreview);
-    }
-
     async function aguardarDeteccao() {
       const loop = setInterval(async () => {
         if (emCooldown) return;
@@ -274,9 +240,8 @@
 
             setTimeout(async () => {
               const img = await capturarImagem();
-              mostrarImagem(img);
-              mostrarControles();
-              contador.innerText = 'Imagem capturada.';
+              enviarImagem(img);
+              contador.innerText = 'Espere...';
               setTimeout(() => {
                 emCooldown = false;
                 deteccoesSeguidas = 0;
@@ -298,15 +263,6 @@
 
     refazerBtn.onclick = () => {
       location.reload();
-    };
-
-    confirmarBtn.onclick = () => {
-      const imgBase64 = document.querySelector('.image-preview img')?.src;
-      if (imgBase64) {
-        enviarImagem(imgBase64);
-      } else {
-        alert('Imagem não encontrada. Por favor, tente novamente.');
-      }
     };
   </script>
 
