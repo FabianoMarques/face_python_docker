@@ -152,6 +152,7 @@ if ($score < 0.40) {
 }
 ?>
 </div>
+<?= "<p style='color:gray'>".$score."</p>"; ?>
 
 <?php if (isset($redirect) && $redirect): ?>
 <script>

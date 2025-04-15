@@ -15,7 +15,6 @@
       font-family: 'Inter', sans-serif;
       background-color: black;
       height: 100vh;
-      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -68,7 +67,7 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
-      display: flex;
+      display: none;
       gap: 1rem;
     }
 
@@ -116,6 +115,18 @@
     button.refazer:hover {
       background-color: #dc2626;
     }
+
+    /* Quadrado de referência com tamanho maior */
+    .reference-square {
+      position: absolute;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      width: 550px; /* Tamanho maior do quadrado */
+      height: 750px; /* Tamanho maior do quadrado */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+    }
   </style>
 </head>
 <body>
@@ -124,10 +135,13 @@
     <video id="videoAuto" autoplay muted playsinline></video>
     <canvas id="canvasOverlay"></canvas>
 
-    <div class="overlay" id="capturaText">POSICIONE SEU ROSTO</div>
+    <!-- Quadrado de referência -->
+    <div class="reference-square"></div>
+
+    <div class="overlay" id="capturaText" style="margin-top: 30px;">POSICIONE SEU ROSTO</div>
     <div class="contador" id="contador">Aguardando rosto...</div>
 
-    <div class="controls" id="controlsContainer" style="display: none;">
+    <div class="controls" id="controlsContainer">
       <button id="confirmarBtn" class="confirmar">Confirmar</button>
       <button class="refazer" id="refazerBtn">Refazer</button>
     </div>
@@ -148,7 +162,6 @@
     async function carregarModelos() {
       await faceapi.nets.tinyFaceDetector.loadFromUri('models');
       await faceapi.nets.faceLandmark68Net.loadFromUri('models');
-      console.log("Modelos carregados.");
       contador.innerText = 'Modelos carregados. Aguardando rosto...';
     }
 
@@ -156,23 +169,17 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
-        console.log("Webcam iniciada.");
       } catch (err) {
         contador.innerText = 'Erro ao acessar a webcam';
         contador.style.color = 'red';
-        console.error("Erro ao acessar a webcam:", err);
       }
     }
 
     async function detectarRostoEDesenhar() {
       const displaySize = { width: video.videoWidth, height: video.videoHeight };
       faceapi.matchDimensions(canvas, displaySize);
-
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-
-      const result = await faceapi
-        .detectSingleFace(video, options)
-        .withFaceLandmarks();
+      const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks();
 
       const context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -187,13 +194,12 @@
     }
 
     async function capturarImagem() {
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      return canvas.toDataURL('image/png');
+      const canvasTemp = document.createElement('canvas');
+      const context = canvasTemp.getContext('2d');
+      canvasTemp.width = video.videoWidth;
+      canvasTemp.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvasTemp.width, canvasTemp.height);
+      return canvasTemp.toDataURL('image/png');
     }
 
     async function enviarImagem(imgBase64) {
@@ -225,19 +231,24 @@
       const loop = setInterval(async () => {
         if (emCooldown) return;
         const detectado = await detectarRostoEDesenhar();
+
         if (detectado) {
           deteccoesSeguidas++;
           contador.innerText = `Rosto detectado (${deteccoesSeguidas}/3)...`;
+
           if (deteccoesSeguidas >= 3) {
             clearInterval(loop);
-            contador.innerText = 'Capturando imagem...';
+            contador.innerText = 'Capturando imagem em 3 segundos...';
             emCooldown = true;
+
             setTimeout(async () => {
               const img = await capturarImagem();
               mostrarImagem(img);
               mostrarControles();
+              contador.innerText = 'Imagem capturada.';
               setTimeout(() => {
                 emCooldown = false;
+                deteccoesSeguidas = 0;
               }, 10000);
             }, 3000);
           }
@@ -251,12 +262,11 @@
     window.onload = async () => {
       await carregarModelos();
       await iniciarWebcam();
-      desenharMiraCentral();
       aguardarDeteccao();
     };
 
     refazerBtn.onclick = () => {
-    location.reload();
+      location.reload();
     };
 
     confirmarBtn.onclick = () => {
@@ -267,38 +277,6 @@
         alert('Imagem não encontrada. Por favor, tente novamente.');
       }
     };
-
-    function desenharMiraCentral() {
-    const ctx = canvas.getContext('2d');
-    const largura = canvas.width;
-    const altura = canvas.height;
-
-  // Aguarda o vídeo carregar para pegar as dimensões reais
-  video.addEventListener('loadedmetadata', () => {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.lineWidth = 2;
-
-    // Círculo central
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 40, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    // Cruz (horizontal e vertical)
-    ctx.beginPath();
-    ctx.moveTo(centerX - 30, centerY);
-    ctx.lineTo(centerX + 30, centerY);
-    ctx.moveTo(centerX, centerY - 30);
-    ctx.lineTo(centerX, centerY + 30);
-    ctx.stroke();
-  });
-}
-
   </script>
 
 </body>
