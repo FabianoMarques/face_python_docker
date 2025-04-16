@@ -70,6 +70,14 @@ if (!empty($params)) {
 $stmt->execute();
 $result = $stmt->get_result();
 
+$registros = $result->fetch_all(MYSQLI_ASSOC); // ← agora salvamos tudo em array
+$quantidade_registros = count($registros);
+
+$soma_total = 0;
+foreach ($registros as $linha) {
+    $soma_total += $linha['total_colaborador'];
+}
+
 $percentual = null;
 if ($result && $result->num_rows > 0) {
     $firstRow = $result->fetch_assoc();
@@ -123,6 +131,15 @@ if ($result && $result->num_rows > 0) {
             <i class="fas fa-history"></i> Ver Histórico
         </button>
     </div>
+            <hr>
+    <div class="row mb-3 align-items-center" style="margin-top: -20px;">
+        <div class="col-md-6" style="margin-top:20px">
+            <h4><?= "<b>".$quantidade_registros."</b>" ?> registro(s) encontrado(s)</h4>
+        </div>
+        <div class="col-md-6 text-end" style="text-align: right;">
+            <h2><b>R$ <?= number_format($soma_total, 2, ',', '.') ?></b></h2>
+        </div>
+    </div>
 
     <table class="table table-striped table-hover ">
     <thead>
@@ -130,12 +147,12 @@ if ($result && $result->num_rows > 0) {
         <th>Paciente</th>
         <th>Plano</th>
         <th>Profissional</th>
-        <th>Valor/Plano (R$)</th>
+        <th style="width:130px">Plano (R$)</th>
         <th>Hora/Plano (R$)</th>
-        <th>Horas/Colaborador </th>
+        <th>Hora/Colaborador (R$) </th>
         <th>Hora/Atendimento *</th>
         <th>Total Colaborador (R$)</th>
-        <th>Data/Hora**</th>
+        <th>Data/Consulta**</th>
     </tr>
     </thead>
 
@@ -145,9 +162,9 @@ if ($result && $result->num_rows > 0) {
                 <td><?= htmlspecialchars($row['nome_paciente']) ?></td>
                 <td><?= htmlspecialchars($row['nome_plano']) ?></td>
                 <td><?= htmlspecialchars($row['profissional']) ?></td>
-                <td>R$ <?= number_format($row['valor'], 2, ',', '.') ?></td>
+                <td>R$ <?= number_format($row['valor'], 2, ',', '.') ?> <a href="#"> <span class="badge"><?= htmlspecialchars($row['numero_aulas']) ?></span></a></td>
                 <td>R$ <?= number_format($row['valor_hora'], 2, ',', '.') ?></td>
-                <td>R$ <?= number_format($row['valor_aula_colaborador'], 2, ',', '.') ?> (<?= intval($row['percentual']) ?>%)</td>
+                <td>R$ <?= number_format($row['valor_aula_colaborador'], 2, ',', '.') ?><a href="#"> <span class="badge"><?= htmlspecialchars($row['percentual']) ?></span></a></td>
                 <td><?= $row['qtd_horas_feitas'] ?></td>
                 <td>R$ <?= number_format($row['total'], 2, ',', '.') ?></td>
                 <td><?= date('d/m/Y H:i', strtotime($row['dt_consulta'])) ?></td>
