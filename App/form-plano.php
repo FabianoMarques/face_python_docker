@@ -1,4 +1,5 @@
 <?php
+include("validar.php");
 require_once '../db.php';
 $conn = (new Database())->getConnection();
 
@@ -55,48 +56,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title><?php echo $idplano ? "Editar Plano" : "Novo Plano"; ?></title>
-    <link rel="stylesheet" href="estilo.css">
-    <link rel="stylesheet" href="botoes.css">
-    <style>
-        .container {
-            max-width: 500px;
-            margin: auto;
-        }
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="bootstrap-3.4/css/bootstrap.min.css">
 
-        label, input {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 8px 15px;
-        }
-    </style>
 </head>
 <body>
-    <div class="container" style="text-align: left;">
-        <h2 style="text-align: center;"><?php echo $idplano ? "Editar Plano" : "Cadastrar Novo Plano"; ?></h2>
+        <div class="container">
+        <div class="row" style="padding:50px">
+            <h2 style="text-align: center;"><b><?php echo $idplano ? "Editar Plano" : "Cadastrar Novo Plano"; ?></b></h2>
 
-        <form method="POST" action="form-plano.php">
-            <input type="hidden" name="idplano" value="<?php echo $idplano; ?>">
+            <form method="POST" action="form-plano.php" class="p-4 border rounded bg-light">
+                <input type="hidden" name="idplano" value="<?php echo $idplano; ?>">
 
-            <label for="nome">Nome do Plano:</label>
-            <input type="text" name="nome" required value="<?php echo htmlspecialchars($nome); ?>">
+                <div class="form-group">
+                    <label for="nome" class="form-label">Nome do Plano:</label>
+                    <input type="text" class="form-control" name="nome" id="nome" required value="<?php echo htmlspecialchars($nome); ?>">
+                </div>
 
-            <label for="valor">Valor do Plano (R$):</label>
-            <input type="number" step="0.01" name="valor" required value="<?php echo htmlspecialchars($valor); ?>">
+                <div class="form-group">
+                    <label for="valor" class="form-label">Valor do Plano (R$):</label>
+                    <input type="number" step="0.01" class="form-control" name="valor" id="valor" required value="<?php echo htmlspecialchars($valor); ?>">
+                </div>
 
-            <label for="numero_aulas">Número de Aulas:</label>
-            <input type="number" name="numero_aulas" required value="<?php echo htmlspecialchars($numero_aulas); ?>">
+                <div class="form-group">
+                    <label for="numero_aulas" class="form-label">Número de Aulas:</label>
+                    <input type="number" class="form-control" name="numero_aulas" id="numero_aulas" required value="<?php echo htmlspecialchars($numero_aulas); ?>">
+                </div>
 
-            <label for="percentual">Percentual (%):</label>
-            <input type="number" name="percentual" required value="<?php echo htmlspecialchars($percentual); ?>">
+                <div class="form-group">
+                    <label for="percentual" class="form-label">Percentual (%):</label>
+                    <input type="number" class="form-control" name="percentual" id="percentual" required value="<?php echo htmlspecialchars($percentual); ?>">
+                </div>
 
-            <button type="submit" class="btn_verde"><?php echo $idplano ? "Atualizar" : "Cadastrar"; ?></button>
-        </form>
+                
+                <!-- Botões lado a lado -->
+                <div class="form-group">
+                    <button type="button" class="btn btn-default" onclick="window.location.href='cad_plano.php'" style="margin-left: 10px;">
+                        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Voltar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <?php echo $idplano ? "Atualizar" : "Cadastrar"; ?>
+                    </button>
+                   
+                </div>
+            </form>
+        </div>
+        </div>
 
-        <button type="button" class="btn_branco" onclick="window.location.href='cad_plano.php'">Voltar</button>
-    </div>
+    <script src="bootstrap-3.4/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

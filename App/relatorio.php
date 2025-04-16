@@ -83,69 +83,8 @@ if ($result && $result->num_rows > 0) {
 <head>
     <meta charset="UTF-8">
     <title>Relatório de Consultas</title>
-    <link rel="stylesheet" href="botoes.css">
-    <link rel="stylesheet" href="estilo-relatorio.css">
-    <style>
-        form {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            font-family: Arial, sans-serif;
-        }
-
-        form label {
-            font-weight: bold;
-            color: #333;
-        }
-
-        form input[type="month"],
-        form input[type="text"] {
-            padding: 6px 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
-
-        form button {
-            padding: 6px 14px;
-            font-size: 14px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        form button:hover {
-            background-color: #45a049;
-        }
-
-        hr {
-            border: none;
-            height: 2px;
-            background-color: #ccc;
-            margin: 20px 0;
-        }
-
-        table {
-            width: 1200px;
-            border-collapse: collapse;
-            margin: 0 auto;
-        }
-
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-    </style>
+   
+    
 </head>
 <body>
 
@@ -153,35 +92,44 @@ if ($result && $result->num_rows > 0) {
     margin: 0 auto;
     padding: 20px;
     font-family: Arial, sans-serif;">
-    <h2>CONSULTAS PARA RELATÓRIO</h2>
+    <h2 style="text-align: center;"><b>CONSULTAS PARA RELATÓRIO</b></h2>
     <hr>
-    <form method="get" style="margin-bottom: 5px;">
+    <form method="get" class="form-inline text-center" style="margin-bottom: 5px;">
+    
+    <div class="form-group">
         <label for="mes">Filtrar por mês:</label>
-        <input type="month" name="mes" id="mes" value="<?= htmlspecialchars($filtro_mes) ?>">
+        <input type="month" name="mes" id="mes" value="<?= htmlspecialchars($filtro_mes) ?>" class="form-control" style="width: auto; margin-right: 10px;">
+    </div>
 
+    <div class="form-group">
         <label for="profissional">Filtrar por profissional:</label>
-        <input type="text" name="profissional" id="profissional" placeholder="Digite o nome" value="<?= htmlspecialchars($filtro_profissional) ?>">
+        <input type="text" name="profissional" id="profissional" placeholder="Digite o nome" value="<?= htmlspecialchars($filtro_profissional) ?>" class="form-control" style="width: auto; margin-right: 10px;">
+    </div>
 
-        <button type="submit">Filtrar</button>
-    </form>
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+
+</form>
+
     <hr>
-    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10%;">
-        <button onclick="location.href='menu.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
-        <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+    <div class="button-row" style="margin-bottom: 30px; display: flex; justify-content: center; gap: 10%;">
+        <button onclick="location.href='menu.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
+        <button onclick="window.print()" class="btn btn-default"><i class="fas fa-print"></i> Imprimir</button>
 
         <?php if ($result && $result->num_rows > 0): ?>
-            <button onclick="location.href='gerar-historico.php'"
-                style="margin-top: 0px; background-color:rgb(252, 246, 168);">
+            <button onclick="location.href='gerar-historico.php'" class="btn btn-warning">
                 <i class="fas fa-save"></i> Gerar Histórico
             </button>
         <?php endif; ?>
 
         <button onclick="location.href='historico.php'"
-            style="margin-top: 0px; background-color:rgb(241, 241, 241);">
+            style="margin-top: 0px; background-color:rgb(241, 241, 241);" class="btn btn-default">
             <i class="fas fa-history"></i> Ver Histórico
         </button>
     </div>
-    <table style="width: 100%;">
+
+    <hr>
+
+    <table class="table table-striped">
     <thead>
     <tr>
         <th>Paciente</th>

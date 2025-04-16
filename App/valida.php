@@ -12,3 +12,6 @@ if (!isset($_SESSION['usuario'])) {
 // Se a sessão estiver ativa, o código abaixo será executado normalmente
 //echo "Bem-vindo, " . $_SESSION['usuario'];
 ?>
+
+<link rel="stylesheet" href="bootstrap-3.4/css/bootstrap.min.css">
+<script src="bootstrap-3.4/js/bootstrap.bundle.min.js"></script>

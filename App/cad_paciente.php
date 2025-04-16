@@ -1,4 +1,5 @@
 <?php
+include("valida.php");
 require_once '../db.php';
 $conn = (new Database())->getConnection();
 
@@ -28,21 +29,21 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pacientes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="estilo-relatorio.css">
-    <link rel="stylesheet" href="botoes.css">
+    <!-- <link rel="stylesheet" href="bootstrap-3.4/css/bootstrap.min.css"> -->
 </head>
 <body>
-
-    <h2>LISTA DE PACIENTES</h2>
+<div class="container">
+    <div class="row">
+    <h2 style="text-align: center;"><b>LISTA DE PACIENTES</b></h2>
 
     <?php if (!empty($mensagem)) echo "<p class='message'>$mensagem</p>"; ?>
 
-    <div class="button-row" style="margin-bottom:-5px">
-        <button onclick="window.location.href='menu.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
-        <button onclick="window.location.href='form.php'"><i class="fa fa-plus"></i> Adicionar Paciente</button>
+    <div class="button-row" style="margin:30px; text-align: center;">
+        <button onclick="window.location.href='menu.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
+        <button onclick="window.location.href='form.php'" class="btn btn-success"><i class="fa fa-plus"></i> Adicionar Paciente</button>
     </div>
 
-    <table>
+    <table class="table table-striped">
         <tr>
             <th>ID</th>
             <th>Nome</th>
@@ -70,13 +71,17 @@ $result = $conn->query($sql);
 
                 <td><?= $row['status'] ?: '—' ?></td>
                 <td>
-                    <a href="form.php?id=<?= $row['idpaciente'] ?>" class="btn edit"><i class="fa fa-edit"></i> Editar</a>
-                    <a href="cad_paciente.php?delete_id=<?= $row['idpaciente'] ?>" class="btn delete" onclick="return confirm('Tem certeza que deseja excluir?')"><i class="fa fa-trash"></i> Excluir</a>
+                    <a href="form.php?id=<?= $row['idpaciente'] ?>" class="btn btn-warning"><i class="fa fa-edit"></i> Editar</a>
+                    <a href="cad_paciente.php?delete_id=<?= $row['idpaciente'] ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir?')"><i class="fa fa-trash"></i> Excluir</a>
                 </td>
             </tr>
         <?php endwhile; ?>
 
     </table>
 
+
+    </div>
+    </div>
+    <!-- <script src="bootstrap-3.4/js/bootstrap.bundle.min.js"></script> -->
 </body>
 </html>

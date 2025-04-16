@@ -1,4 +1,5 @@
 <?php
+include("valida.php");
 require_once '../db.php';
 $conn = (new Database())->getConnection();
 
@@ -63,8 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Cadastro de Paciente</title>
-    <link rel="stylesheet" href="botoes.css">
-    <link rel="stylesheet" href="estilo.css">
+
     <style>
         .form-group { margin-bottom: 15px; }
         label { font-weight: bold; display: block; text-align: left; }
@@ -74,7 +74,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 
 <div class="container">
-    <h2><?= $id ? 'Editar' : 'Cadastrar' ?> Paciente</h2>
+<div class="row" style="padding:50px">
+    <h2 style="text-align: center;"><?= $id ? '<b>Editar</b>' : 'Cadastrar' ?> <b>Paciente</b></h2>
     <?php if (!empty($mensagem)) echo "<p class='message'>$mensagem</p>"; ?>
 
     <form method="post">
@@ -133,11 +134,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </select>
         </div>
 
-        <div>
-            <button type="submit" class="btn_verde">Salvar</button>
-            <button type="button" onclick="window.location.href='cad_paciente.php'" class="btn_branco">Voltar</button>
+        <div class="form-group">
+                <button type="button" onclick="window.location.href='cad_paciente.php'" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Voltar</button>
+                <button type="submit" class="btn btn-success">Salvar</button>
         </div>
     </form>
+
+</div>
 </div>
 
 </body>

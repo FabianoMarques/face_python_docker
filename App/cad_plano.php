@@ -1,4 +1,5 @@
 <?php
+include("valida.php");
 require_once '../db.php';
 $conn = (new Database())->getConnection();
 
@@ -24,57 +25,16 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <title>Planos</title>
-    <link rel="stylesheet" href="estilo-relatorio.css">
-    <link rel="stylesheet" href="botoes.css">
     
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-
-        .btn {
-            padding: 4px 10px;
-            margin-right: 5px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .btn-editar {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .btn-excluir {
-            background-color: #f44336;
-            color: white;
-        }
-
-        .btn-novo {
-            background-color: #2196F3;
-            color: white;
-            margin-bottom: 15px;
-            display: inline-block;
-            padding: 8px 15px;
-        }
-    </style>
+    
 </head>
 <body>
     <div class="container">
-        <h2>PLANOS CADASTRADOS</h2>
+        <h2 style="text-align: center;"><b>PLANOS CADASTRADOS</b></h2>
 
-        <div class="button-row" style="margin-bottom:15px">
-            <button onclick="window.location.href='menu.php'" ><i class="fas fa-arrow-left"></i> Voltar</button>
-            <button onclick="window.location.href='form-plano.php'" >
+        <div class="button-row" style="margin-bottom:15px; text-align: center; margin: 30px;">
+            <button onclick="window.location.href='menu.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
+            <button onclick="window.location.href='form-plano.php'" class="btn btn-success" >
                         <i class="fa fa-plus"></i> Adicionar plano
             </button>
         </div>
@@ -86,7 +46,7 @@ $result = $conn->query($sql);
             </span>
         </div>
 
-        <table>
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -110,8 +70,8 @@ $result = $conn->query($sql);
                         <td><?php echo $row["numero_aulas"]; ?></td>
                         <td><?php echo $row["percentual"]; ?></td>
                         <td>
-                            <a class="btn btn-editar" href="form-plano.php?editar=<?php echo $row['idplano']; ?>">Editar</a>
-                            <a class="btn btn-excluir" href="cad_plano.php?excluir=<?php echo $row['idplano']; ?>" onclick="return confirm('Deseja excluir este plano?');">Excluir</a>
+                            <a class="btn btn-warning" href="form-plano.php?editar=<?php echo $row['idplano']; ?>">Editar</a>
+                            <a class="btn btn-danger" href="cad_plano.php?excluir=<?php echo $row['idplano']; ?>" onclick="return confirm('Deseja excluir este plano?');">Excluir</a>
                         </td>
                     </tr>
                 <?php } ?>
