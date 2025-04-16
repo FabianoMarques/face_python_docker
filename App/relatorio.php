@@ -88,11 +88,8 @@ if ($result && $result->num_rows > 0) {
 </head>
 <body>
 
-<div class="container" style="max-width: 1300px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;">
-    <h2 style="text-align: center;"><b>CONSULTAS PARA RELATÓRIO</b></h2>
+<div class="container">
+    <h2 style="text-align: center;"><b>CONSULTAS PARA HISTÓRICO</b></h2>
     <hr>
     <form method="get" class="form-inline text-center" style="margin-bottom: 5px;">
     
@@ -127,18 +124,16 @@ if ($result && $result->num_rows > 0) {
         </button>
     </div>
 
-    <hr>
-
-    <table class="table table-striped">
+    <table class="table table-striped table-hover ">
     <thead>
-    <tr>
+    <tr class="info">
         <th>Paciente</th>
         <th>Plano</th>
         <th>Profissional</th>
         <th>Valor/Plano (R$)</th>
         <th>Hora/Plano (R$)</th>
-        <th>Horas/Colaborador *</th>
-        <th>Hora/Atendimento</th>
+        <th>Horas/Colaborador </th>
+        <th>Hora/Atendimento *</th>
         <th>Total Colaborador (R$)</th>
         <th>Data/Hora**</th>
     </tr>

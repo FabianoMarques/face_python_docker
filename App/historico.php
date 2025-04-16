@@ -21,7 +21,7 @@ $sql = "
         FROM historico
         WHERE 1=1
 ";
-// PARÂMETROS E FILTROS
+
 $params = [];
 $types = '';
 
@@ -40,12 +40,12 @@ if (!empty($filtro_profissional)) {
 $sql .= "
         GROUP BY profissional, mes_ano
     ) h2
-    ON h1.profissional = h2.profissional
+      ON h1.profissional = h2.profissional
     AND DATE_FORMAT(h1.data_consulta, '%Y-%m') = h2.mes_ano
     AND h1.qtd_horas_feitas = h2.max_horas
 ";
 
-// PREPARAR E EXECUTAR
+// Preparar e executar
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
     die("Erro no prepare: " . $conn->error);
@@ -57,6 +57,14 @@ if (!empty($params)) {
 
 $stmt->execute();
 $result = $stmt->get_result();
+$registros = $result->fetch_all(MYSQLI_ASSOC); // ← agora salvamos tudo em array
+$quantidade_registros = count($registros);
+
+// Agora calculamos a soma manualmente
+$soma_total = 0;
+foreach ($registros as $linha) {
+    $soma_total += $linha['total_colaborador'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -64,131 +72,80 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Histórico de Consultas</title>
-    <link rel="stylesheet" href="botoes.css">
-    <link rel="stylesheet" href="estilo-relatorio.css">
-    <style>
-        form {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            font-family: Arial, sans-serif;
-        }
-
-        form label {
-            font-weight: bold;
-            color: #333;
-        }
-
-        form input[type="month"],
-        form input[type="text"] {
-            padding: 6px 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
-
-        form button {
-            padding: 6px 14px;
-            font-size: 14px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        form button:hover {
-            background-color: #45a049;
-        }
-
-        hr {
-            border: none;
-            height: 2px;
-            background-color: #ccc;
-            margin: 20px 0;
-        }
-
-        table {
-            width: 1200px;
-            border-collapse: collapse;
-            margin: 0 auto;
-        }
-
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-    </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 1300px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;">
-    <h2>HISTÓRICO DE CONSULTAS</h2>
+<div class="container">
+    <h2 style="text-align: center;"><b>HISTÓRICO DE CONSULTAS</b></h2>
     <hr>
-    <form method="get" style="margin-bottom: 5px;">
+
+    <form method="get" style="margin-bottom: 5px; text-align: center;" class="form-inline">
         <label for="mes">Filtrar por mês:</label>
-        <input type="month" name="mes" id="mes" value="<?= htmlspecialchars($filtro_mes) ?>">
+        <input type="month" name="mes" id="mes" value="<?= htmlspecialchars($filtro_mes) ?>" class="form-control form-control-sm w-auto">
 
-        <label for="profissional">Filtrar por profissional:</label>
-        <input type="text" name="profissional" id="profissional" placeholder="Digite o nome" value="<?= htmlspecialchars($filtro_profissional) ?>">
+        <label for="profissional"> Filtrar por profissional:</label>
+        <input type="text" name="profissional" id="profissional" placeholder="Digite o nome" value="<?= htmlspecialchars($filtro_profissional) ?>" class="form-control form-control-sm w-auto">
 
-        <button type="submit">Filtrar</button>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
     </form>
+
     <hr>
-    <div class="button-row" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10%;">
-        <button onclick="location.href='relatorio.php'"><i class="fas fa-arrow-left"></i> Voltar</button>
-        <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
-        <button onclick="location.href='estatisticas.php'"><i class="fas fa-chart-line"></i>  Estatisticas</button>
+    <div class="button-row" style="margin: 30px; display: flex; justify-content: center; gap: 10%;">
+        <button onclick="location.href='relatorio.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
+        <button onclick="window.print()" class="btn btn-default"><i class="fas fa-print"></i> Imprimir</button>
+        <button onclick="location.href='estatisticas.php'" class="btn btn-default"><i class="fas fa-chart-line"></i> Estatísticas</button>
     </div>
-    <table style="width: 100%;">
+
+    <hr>
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-6" style="margin-top:20px">
+            <h4><?= "<b>".$quantidade_registros."</b>" ?> registro(s) encontrado(s)</h4>
+        </div>
+        <div class="col-md-6 text-end" style="text-align: right;">
+            <h2><b>R$ <?= number_format($soma_total, 2, ',', '.') ?></b></h2>
+        </div>
+    </div>
+
+    <table class="table table-striped table-hover">
         <thead>
-        <tr>
+        <tr class="info">
             <th>Paciente</th>
             <th>Plano</th>
             <th>Profissional</th>
-            <th>Valor/Plano (R$)</th>
-            <th>Valor/Hora/Plano (R$)</th>
+            <th>Plano (R$)</th>
+            <th>Hora/plano(R$)</th>
+            <th>Hora/Colaborador (R$)</th>
             <th>Hora/Atendimento</th>
             <th>Total Colaborador (R$)</th>
             <th>Data Consulta</th>
-            <th>Registro/Log</th>
+            <th>Registro/Log *</th>
         </tr>
         </thead>
         <tbody>
-        <?php if ($result && $result->num_rows > 0): ?>
-            <?php while ($row = $result->fetch_assoc()): ?>
+        <?php if ($quantidade_registros > 0): ?>
+            <?php foreach ($registros as $row): ?>
                 <tr>
                     <td><?= htmlspecialchars($row['nome_paciente']) ?></td>
                     <td><?= htmlspecialchars($row['nome_plano']) ?></td>
                     <td><?= htmlspecialchars($row['profissional']) ?></td>
-                    <td>R$ <?= number_format($row['valor_plano'], 2, ',', '.') ?></td>
-                    <td>R$ <?= number_format($row['valor_hora_colaborador'], 2, ',', '.') ?> </td>
+                    <td style="width: 150px;">R$ <?= number_format($row['valor_plano'], 2, ',', '.') ?> <a href="#"> <span class="badge"><?= htmlspecialchars($row['n_atendimento_plano']) ?></span></a></td>
+                    <td>R$ <?= htmlspecialchars($row['valor_hora_plano']) ?></td>
+                    <td>R$ <?= number_format($row['valor_hora_colaborador'], 2, ',', '.') ?><a href="#"> <span class="badge"><?= intval($row['percentual']) ?>%</span></a></td>
                     <td><?= $row['qtd_horas_feitas'] ?></td>
-                    <td>R$ <?= number_format($row['total_colaborador'], 2, ',', '.') ?> (<?= intval($row['percentual']) ?>%)</td>
+                    <td>R$ <?= number_format($row['total_colaborador'], 2, ',', '.') ?> </td>
                     <td><?= date('d/m/Y H:i', strtotime($row['data_consulta'])) ?></td>
                     <td><?= date('d/m/Y H:i:s', strtotime($row['data_registro'])) ?></td>
                 </tr>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="9">Nenhum histórico encontrado<?= $filtro_mes || $filtro_profissional ? ' para os filtros selecionados.' : '.' ?></td>
+                <td colspan="10">Nenhum histórico encontrado<?= $filtro_mes || $filtro_profissional ? ' para os filtros selecionados.' : '.' ?></td>
             </tr>
         <?php endif; ?>
         </tbody>
     </table>
 
-    <p style="text-align: left;">* Dados armazenados permanentemente no histórico para controle. <br> ** Registro feito ao clicar em "Gerar Histórico".</p>
+    <p style="text-align: left;">Dados armazenados permanentemente no histórico para controle. <br> * Registro feito ao clicar em "Gerar Histórico".</p>
 </div>
 
 </body>
