@@ -97,7 +97,7 @@ foreach ($registros as $linha) {
     </div>
 
     <hr>
-    <div class="row mb-3 align-items-center">
+    <div class="row mb-3 align-items-center" style="margin-top: -20px;">
         <div class="col-md-6" style="margin-top:20px">
             <h4><?= "<b>".$quantidade_registros."</b>" ?> registro(s) encontrado(s)</h4>
         </div>
