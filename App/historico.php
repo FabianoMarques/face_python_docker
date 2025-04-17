@@ -17,7 +17,8 @@ $sql = "
         SELECT
             profissional,
             DATE_FORMAT(data_consulta, '%Y-%m') as mes_ano,
-            MAX(qtd_horas_feitas) as max_horas
+            MAX(qtd_horas_feitas) as max_horas,
+            MAX(data_consulta) as data_mais_recente
         FROM historico
         WHERE 1=1
 ";
@@ -43,6 +44,7 @@ $sql .= "
       ON h1.profissional = h2.profissional
     AND DATE_FORMAT(h1.data_consulta, '%Y-%m') = h2.mes_ano
     AND h1.qtd_horas_feitas = h2.max_horas
+    AND h1.data_consulta = h2.data_mais_recente
 ";
 
 // Preparar e executar
