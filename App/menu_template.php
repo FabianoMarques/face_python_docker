@@ -20,7 +20,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="menu.php"><strong>Menu</strong></a>
+      <a class="navbar-brand" href="menu.php"><strong><span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span></strong></a>
     </div>
 
     <!-- Links -->
@@ -29,6 +29,7 @@
         <li><a href="cad_plano.php">PLANOS</a></li>
         <li><a href="cad_paciente.php">PACIENTES</a></li>
         <li><a href="relatorio.php">RELATÓRIOS</a></li>
+        <li><a href="historico.php">HISTORICO</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="logout.php" class="text-danger">SAIR <i class="fas fa-sign-out-alt"></i></a></li>
