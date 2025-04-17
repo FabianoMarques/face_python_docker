@@ -30,8 +30,10 @@
         <li><a href="cad_paciente.php">PACIENTES</a></li>
         <li><a href="relatorio.php">RELATÓRIOS</a></li>
         <li><a href="historico.php">HISTORICO</a></li>
+        <li><a href="estatisticas.php">ESTATÍSTICAS</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
+        <li class="navbar-text"><b><?= $_SESSION["usuario"];  ?></b></li>
         <li><a href="logout.php" class="text-danger">SAIR <i class="fas fa-sign-out-alt"></i></a></li>
       </ul>
     </div>

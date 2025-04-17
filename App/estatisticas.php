@@ -1,6 +1,7 @@
 <?php
 include("valida.php");
-require_once '../db.php';
+include("menu_template.php") ;
+require_once '../db.php'; 
 
 $db = new Database();
 $conn = $db->getConnection();
@@ -97,7 +98,7 @@ foreach ($data as $prof => $mesValores) {
     <style>
         body {
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            margin: 30px;
+            margin: 0px;
             background-color: #f9f9f9;
             color: #333;
         }
@@ -148,23 +149,14 @@ foreach ($data as $prof => $mesValores) {
         canvas {
             margin-top: 40px;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            margin-top: -50px;
-            padding: 40px;
-            background-color:rgba(255, 255, 255, 0);
-            border-radius: 8px;
-            /* box-shadow: 0 0 20px rgba(0,0,0,0.03); */
-            text-align: center;
-        }
+
     </style>
 </head>
 <body>
 <div class="container">
-<h2>Estatísticas Contábeis (<?= $ano ?><?= $mesFiltro ? " - Mês: $mesFiltro" : "" ?>)</h2>
-
-<form method="GET">
+<h2 style="text-align: center;">Estatísticas Contábeis (<?= $ano ?><?= $mesFiltro ? " - Mês: $mesFiltro" : "" ?>)</h2>
+<hr>
+<form method="GET" style="text-align: center;">
     <label>Ano: <input type="number" name="ano" value="<?= $ano ?>"></label>
     <label>Mês:
         <select name="mes">
