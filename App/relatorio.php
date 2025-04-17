@@ -75,8 +75,9 @@ $quantidade_registros = count($registros);
 
 $soma_total = 0;
 foreach ($registros as $linha) {
-    $soma_total += $linha['total_colaborador'];
+    $soma_total += $linha['total']; // ← este é o nome correto da coluna retornada no SELECT
 }
+
 
 $percentual = null;
 if ($result && $result->num_rows > 0) {
