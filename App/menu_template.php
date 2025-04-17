@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="bootstrap-3.4/css/bootstrap.min.css">
 <script src="bootstrap-3.4/js/bootstrap.bundle.min.js"></script>
 <!-- menu.php -->
-<nav class="navbar navbar-default" style="background-color: #fff; border-bottom: 2px solid #ddd; font-size: 13px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+<nav class="navbar navbar-default" style="background-color: #fff; border-bottom: 2px solid #ddd; font-size: 13px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); margin-top:-3px;">
   <div class="container-fluid">
     <!-- Logo e botão de toggle para mobile -->
     <div class="navbar-header">

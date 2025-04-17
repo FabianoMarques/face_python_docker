@@ -93,8 +93,7 @@ foreach ($registros as $linha) {
     </form>
 
     <hr>
-    <div class="button-row" style="margin: 30px; display: flex; justify-content: center; gap: 10%;">
-        <button onclick="location.href='relatorio.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
+    <div class="button-row" style="margin: 20px; display: flex; justify-content: center; gap: 10%;">
         <button onclick="window.print()" class="btn btn-default"><i class="fas fa-print"></i> Imprimir</button>
         <button onclick="location.href='estatisticas.php'" class="btn btn-default"><i class="fas fa-chart-line"></i> Estatísticas</button>
     </div>

@@ -41,7 +41,7 @@ $result = $conn->query($sql);
     <?php if (!empty($mensagem)) echo "<p class='message'>$mensagem</p>"; ?>
 
     <div class="button-row" style="margin:30px; text-align: center;">
-        <button onclick="window.location.href='menu.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
+        
         <button onclick="window.location.href='form.php'" class="btn btn-success"><i class="fa fa-plus"></i> Adicionar Paciente</button>
     </div>
 

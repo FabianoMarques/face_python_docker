@@ -34,7 +34,6 @@ $result = $conn->query($sql);
         <h2 style="text-align: center;"><b>PLANOS CADASTRADOS</b></h2>
 
         <div class="button-row" style="margin-bottom:15px; text-align: center; margin: 30px;">
-            <button onclick="window.location.href='menu.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
             <button onclick="window.location.href='form-plano.php'" class="btn btn-success" >
                         <i class="fa fa-plus"></i> Adicionar plano
             </button>

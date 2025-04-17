@@ -118,8 +118,7 @@ if ($result && $result->num_rows > 0) {
 </form>
 
     <hr>
-    <div class="button-row" style="margin-bottom: 30px; display: flex; justify-content: center; gap: 10%;">
-        <button onclick="location.href='menu.php'" class="btn btn-default"><i class="fas fa-arrow-left"></i> Voltar</button>
+    <div class="button-row" style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10%;">
         <button onclick="window.print()" class="btn btn-default"><i class="fas fa-print"></i> Imprimir</button>
 
         <?php if ($result && $result->num_rows > 0): ?>
