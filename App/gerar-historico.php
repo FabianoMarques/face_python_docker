@@ -184,12 +184,20 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-        <h2>Resultado da Geração do Histórico</h2>
-        <p><strong>Registros inseridos:</strong> <?= $inseridos ?></p>
-        <p><strong>Registros ignorados (já existiam):</strong> <?= $nao_inseridos ?></p>
-        <br>
-        <button onclick="location.href='relatorio.php'">Voltar ao Relatório</button>
-        <button onclick="location.href='historico.php'">Ver Histórico</button>
+        <div class="row" >
+
+        <div style="padding:50px; background-color:#e3f2fd; margin-top: 150px;">
+            <h2><b>Resultado da Geração do Histórico</b></h2><hr>
+            <h4><strong>Registros inseridos:</strong> <?= $inseridos ?></h4>
+            <h4><strong>Registros ignorados (já existiam):</strong> <?= $nao_inseridos ?></h4>
+            <br>
+            <div style="text-align:center">
+            <button onclick="location.href='relatorio.php'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Voltar ao Relatório</button>
+            <button onclick="location.href='historico.php'" class="btn btn-primary"><i class="fas fa-history"></i> Ver Histórico</button>
+            </div>
+        </div>
+
     </div>
+</div>
 </body>
 </html>
