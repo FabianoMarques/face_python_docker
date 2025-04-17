@@ -1,5 +1,7 @@
 <?php
 include("valida.php");
+include("menu_template.php") ;
+
 require_once '../db.php';
 $conn = (new Database())->getConnection();
 
