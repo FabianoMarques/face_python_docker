@@ -186,10 +186,10 @@ $conn->close();
     <div class="container">
         <div class="row" >
 
-        <div style="padding:50px; background-color:#e3f2fd; margin-top: 150px;">
+        <div style="padding:50px; background-color:#e3f2fd; margin-top: 150px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
             <h2><b>Resultado da Geração do Histórico</b></h2><hr>
-            <h4><strong>Registros inseridos:</strong> <?= $inseridos ?></h4>
-            <h4><strong>Registros ignorados (já existiam):</strong> <?= $nao_inseridos ?></h4>
+            <h4 style="margin-left: 50px;"><strong>Registros inseridos:</strong> <b> <?= $inseridos ?></b></h4>
+            <h4 style="margin-left: 50px;"><strong>Registros ignorados (já existiam):</strong><b> <?= $nao_inseridos ?></b> </h4>
             <br>
             <div style="text-align:center">
             <button onclick="location.href='relatorio.php'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Voltar ao Relatório</button>
